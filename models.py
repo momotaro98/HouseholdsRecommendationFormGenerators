@@ -7,6 +7,8 @@ from home_electric_usage_recommendation_modules \
 
 class DataFormat:
     """
+    Abstract Model
+
     家庭が持つデータ
     """
     pass
@@ -14,6 +16,8 @@ class DataFormat:
 
 class OperatingDataFormat(DataFormat):
     """
+    Abstract Model
+
     家電操作のデータ形式
     """
     pass
@@ -21,6 +25,8 @@ class OperatingDataFormat(DataFormat):
 
 class ACOperatingDataFormat(OperatingDataFormat):
     """
+    Practical Model
+
     エアコン操作のデータ形式 <- My Experiment!
 
     想定しているデータカラム
@@ -55,13 +61,26 @@ class ACOperatingDataFormat(OperatingDataFormat):
 
 class TimeSeriesDataFormat(DataFormat):
     """
+    Abstract Model
+
     時系列データのデータ形式
+    """
+    pass
+
+
+class SmartMeterDataFormat(TimeSeriesDataFormat):
+    """
+    Practical Model
+
+    スマートメータのデータ形式
     """
     pass
 
 
 class MetaDataFormat(DataFormat):
     """
+    Abstract Model
+
     家族構成データ・住まい地域などのデータ形式
     """
     pass
@@ -71,18 +90,51 @@ class Household:
     """
     家庭はデータを持つ
 
-    Example:
-    電力時系列データ
-    家族構成データ
+    データ形式
+    時系列データ TimeSeriesDataFormat -> SmartMeterDataFormat
+    家族構成データ MetaDataFormat
     """
-    pass
+    def __init__(self, ac_operating_DF=None, smart_meter_DF=None)
+        '''
+        DataFormat型のモデルをいくつか保持するものが家庭
+        DataFormat型のモデルというのがつまりDBの各テーブルにあたる
+        '''
+        self.ac_operating_DF = ac_operating_DF
+        self.smart_meter_DF = smart_meter_DF
 
 
-class HouseIterator:
+class HouseholdIterator:
     """
+    Householdモデルを持つイテレータ
     """
     def __init__(self):
-        pass
+        self._households_list = []
+        self._i = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._i == len(self._households_list):
+            raise StopIteration()
+        household = self._households_list[self._i]
+        self._i += 1
+        return household
+
+    def append(self, household):
+        '''
+        Householdモデルをself._households_listへ入れ込む
+        '''
+        # Household型かチェック
+        if not self._is_Household(household):
+            return
+        self._households_list.append(household)
+
+    def _is_Household(self, h):
+        '''
+        Householdモデルであるかチェックする
+        '''
+        return isinstance(h, Household)
 
 
 class FormGenerator:
