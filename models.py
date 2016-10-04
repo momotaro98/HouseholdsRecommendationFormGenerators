@@ -36,8 +36,8 @@ class ACOperatingDataFormat(OperatingDataFormat):
     timestamp:       操作時の日時時刻 datetime型
     on_off:          オンオフ操作 str型
     operating:       運転モード操作 str型
-    set_temperature: 設定温度操作 str型
-    wind:            設定風量 int型
+    set_temperature: 設定温度操作 int型
+    wind:            設定風量 str型
     temperature:     室内温度 float型
     pressure:        室内気圧 float型
     humidity:        室内湿度 float型
