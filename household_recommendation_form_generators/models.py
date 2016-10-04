@@ -94,7 +94,7 @@ class Household:
     時系列データ TimeSeriesDataFormat -> SmartMeterDataFormat
     家族構成データ MetaDataFormat
     """
-    def __init__(self, ac_operating_DF=None, smart_meter_DF=None)
+    def __init__(self, ac_operating_DF=None, smart_meter_DF=None):
         '''
         DataFormat型のモデルをいくつか保持するものが家庭
         DataFormat型のモデルというのがつまりDBの各テーブルにあたる
@@ -139,7 +139,7 @@ class HouseholdIterator:
 
 class FormGenerator:
     def __init__(self, houseiter):
-        """初期化ではHouseIteratorインスタンスを受け取る
+        """初期化ではHouseholdIteratorインスタンスを受け取る
         """
         pass
 
@@ -168,9 +168,9 @@ if __name__ == "__main__":
     pass
 
     # 始めにレコメンドレポートを発行する家庭群を用意する
-    # データセットからの家庭群をHouseIteratorとして収納
-    # CSVとかDBからのデータをHouseIteratorにする
-    # houses = HouseIterator("データセットからのデータ")
+    # データセットからの家庭群をHouseholdIteratorとして収納
+    # CSVとかDBからのデータをHouseholdIteratorにする
+    # houses = HouseholdIterator("データセットからのデータ")
 
     # instanciate EachHomeWayFormGemerator
     # ehw_fg = EachHomeWayFormGemerator(houses)
