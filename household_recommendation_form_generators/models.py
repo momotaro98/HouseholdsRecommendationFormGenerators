@@ -5,94 +5,18 @@ from home_electric_usage_recommendation_modules \
     import (SettingTemp, ReduceUsage, ChangeUsage)
 
 
-class DataFormat:
-    """
-    Abstract Model
-
-    家庭が持つデータ
-    """
-    pass
-
-
-class OperatingDataFormat(DataFormat):
-    """
-    Abstract Model
-
-    家電操作のデータ形式
-    """
-    pass
-
-
-class ACOperatingDataFormat(OperatingDataFormat):
-    """
-    Practical Model
-
-    エアコン操作のデータ形式 <- My Experiment!
-
-    想定しているデータカラム
-    --------------------------------------------------------------------------------------------
-    timestamp,on_off,operating,set_temperature,wind,temperature,pressure,humidity,IP_Address
-    --------------------------------------------------------------------------------------------
-    timestamp:       操作時の日時時刻 datetime型
-    on_off:          オンオフ操作 str型
-    operating:       運転モード操作 str型
-    set_temperature: 設定温度操作 int型
-    wind:            設定風量 str型
-    temperature:     室内温度 float型
-    pressure:        室内気圧 float型
-    humidity:        室内湿度 float型
-    IP_Address:      操作者IPアドレス str型
-    """
-    def __init__(self, timestamp, on_off=None, operating=None,
-                 set_temperature=None, wind=None,
-                 temperature=None, pressure=None, humidity=None,
-                 IP_Address=None):
-        self.timestamp = dt.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
-        self.on_off = str(on_off) if on_off else on_off
-        self.operating = str(operating) if operating else operating
-        self.set_temperature = int(set_temperature)\
-            if set_temperature else set_temperature
-        self.wind = str(wind) if wind else wind
-        self.temperature = float(temperature) if temperature else wind
-        self.pressure = float(pressure) if pressure else pressure
-        self.humidity = float(humidity) if humidity else humidity
-        self.IP_Address = str(IP_Address) if IP_Address else IP_Address
-
-
-class TimeSeriesDataFormat(DataFormat):
-    """
-    Abstract Model
-
-    時系列データのデータ形式
-    """
-    pass
-
-
-class SmartMeterDataFormat(TimeSeriesDataFormat):
-    """
-    Practical Model
-
-    スマートメータのデータ形式
-    """
-    pass
-
-
-class MetaDataFormat(DataFormat):
-    """
-    Abstract Model
-
-    家族構成データ・住まい地域などのデータ形式
-    """
-    pass
-
-
 class Household:
     """
-    家庭はデータを持つ
+    家庭はデータの固まりをいくつか持つ
 
     データ形式
     時系列データ TimeSeriesDataFormat -> SmartMeterDataFormat
-    家族構成データ MetaDataFormat
+    操作ログデータ LogDataFormat -> ApplianceLogDataFormat -> ACLogDataFormat
+    内容実行二択データ TwoSelectionsDataFormat -> IsDoneDataFormat
+
+    MetaDataFormat
+    # 家族構成情報
+    # 住まい地域情報
     """
     def __init__(self, ac_operating_DF=None, smart_meter_DF=None):
         '''
@@ -138,51 +62,109 @@ class HouseholdIterator:
 
 
 class FormGenerator:
-    def __init__(self, houseiter):
-        """初期化ではHouseholdIteratorインスタンスを受け取る
+    '''
+    Abstract Model
+    '''
+    def __init__(self, house_iter):
+        """
+        初期化ではHouseholdIteratorインスタンスを受け取る
+        """
+        self.house_iter = house_iter
+
+    def run(self):
+        """
+        フォームジェネレータを実行するメソッド
+        """
+        # 提案手法では分類木生成・ライバル手法では個別処理にあたる
+        # データ前処理フェーズ
+        self.process_data_for_preprocessing()
+
+        # home_electric_usage_recommendation_modules を利用して
+        # レコメンド内容を生成する処理フェーズ
+        self.process_data_for_output_recommendation_form()
+
+    def process_data_for_preprocessing(self):
+        """
+        事前処理にあたる反応データ処理用のメソッド
+
+        * ここが研究要素であり提案手法・ライバル手法で異なる
+            * 提案手法ではここで木構造を生成する
+            * 個別手法では個別家庭毎でどのレポート内容を実行するかの処理を行う
+            * クラスタリング手法ではクラスタリング処理を行う
+
+        この処理において利用するデータが「反応データ」と呼ぶもので
+            * 実行したかどうかの2択データ -> IsDoneDataFormat
+            * レポート画面閲覧ログデータ -> WebPageViewLogDataFormat
+            * 実際の電力消費データ -> ACLogDataFormat 'or' SmartMeterDataFormat
+        2016-10-05の段階ではこの3つで行っていく予定としている
         """
         pass
 
-    def run(self):
-        """フォームジェネレータを実行するメソッド
+    def process_data_for_output_recommendation_form(self):
+        """
+        レコメンドレポート生成用の処理をする部分
+        home_electric_usage_recommendation_modules ライブラリはここで利用する
+
+        この処理において利用するデータが「解析用データ」と呼ぶもので
+            * 実際の電力消費データ -> ACLogDataFormat 'or' SmartMeterDataFormat
+        を利用する
         """
         pass
 
     def generate_html(self):
+        """
+        HTML文を吐き出すメソッド
+        """
         pass
 
 
 class EachHomeWayFormGemerator(FormGenerator):
-    pass
+    def process_data_for_preprocessing(self):
+        pass
+
+    def process_data_for_output_recommendation_form(self):
+        pass
 
 
 class ClusteringWayFormGenerator(FormGenerator):
-    pass
+    def process_data_for_preprocessing(self):
+        pass
+
+    def process_data_for_output_recommendation_form(self):
+        pass
 
 
 class ClassificationTreeWayFormGenerator(FormGenerator):
-    pass
+    def process_data_for_preprocessing(self):
+        pass
+
+    def process_data_for_output_recommendation_form(self):
+        pass
 
 
 if __name__ == "__main__":
     pass
 
     # 始めにレコメンドレポートを発行する家庭群を用意する
-    # データセットからの家庭群をHouseholdIteratorとして収納
-    # CSVとかDBからのデータをHouseholdIteratorにする
-    # houses = HouseholdIterator("データセットからのデータ")
+
+    # DB, CSVファイル等からDataFormatを用意して
+    # 家庭ごとにHousehold型へ入れ込む
+    # そのHousehold型の複数のインスタンス達を
+    # HouseholdIteratorへ突っ込む
+
+    # house_iterを用意したのち
 
     # instanciate EachHomeWayFormGemerator
-    # ehw_fg = EachHomeWayFormGemerator(houses)
+    # ehw_fg = EachHomeWayFormGemerator(house_iter)
     # run EachHomeWayFormGemerator instance
     # ehw_fg.run()
 
     # instanciate ClusteringWayFormGenerator
-    # cw_fg = ClusteringWayFormGenerator(houses)
+    # cw_fg = ClusteringWayFormGenerator(house_iter)
     # run ClusteringWayFormGenerator instance
     # cw_fg.run()
 
     # instanciate ClassificationTreeWayFormGenerator
-    # ctw_fg = ClassificationTreeWayFormGenerator(houses)
+    # ctw_fg = ClassificationTreeWayFormGenerator(house_iter)
     # run ClassificationTreeWayFormGenerator instance
     # ctw_fg.run()
