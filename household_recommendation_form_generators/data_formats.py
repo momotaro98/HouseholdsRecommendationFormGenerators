@@ -1,31 +1,64 @@
-# condig: utf-8
+class DataRows:
+    """
+    家庭が持つデータ型
+
+    ACLogDataFormat型のシーケンス
+    SmartMeterDataFormat型のシーケンス
+    TwoSelectionsDataFormat型のシーケンス
+    を持つ
+
+    意味としてはDBにおけるテーブル・ビュー
+    """
+    def __init__(self, format_type):
+        self._format_type = format_type
+        self._rows_list = []  # 実態 型の中にデータの本体の内部リストを持つ
+
+    @property
+    def format_type(self):
+        return self._format_type
+
+    @format_type.setter
+    def format_type(self, format_type):
+        raise Exception  # TODO: ちゃんとしたエラーを出すようにする
+
+    def append(self, row):
+        # リストに入れる型がDataFormat型であるかチェック
+        if not isinstance(row, DataFormat):
+            return
+        self._rows_list.append(row)
+
+    def get_rows_iter(self):
+        '''
+        for文用に利用する内部リストのイテレータを返すメソッド
+        '''
+        return iter(self._rows_list)
 
 
 class DataFormat:
     """
-    Abstract Model
+    Top Abstract Model
 
-    家庭が持つデータ
+    意味としてはDBテーブルにおける1カラム分
     """
-    pass
+    format_type = 'DataFormat'
 
 
-class LogDataFormat:
+class LogDataFormat(DataFormat):
     """
     Abstract Model
 
     何かを閲覧したり操作するときのログデータ
     """
-    pass
+    format_type = 'LogDataFormat'
 
 
-class ApplianceLogDataFormat(DataFormat):
+class ApplianceLogDataFormat(LogDataFormat):
     """
     Abstract Model
 
     家電操作のデータ形式
     """
-    pass
+    format_type = 'ApplianceLogDataFormat'
 
 
 class ACLogDataFormat(ApplianceLogDataFormat):
@@ -48,6 +81,8 @@ class ACLogDataFormat(ApplianceLogDataFormat):
     humidity:        室内湿度 float型
     IP_Address:      操作者IPアドレス str型
     """
+    format_type = 'ACLogDataFormat'
+
     def __init__(self, timestamp, on_off=None, operating=None,
                  set_temperature=None, wind=None,
                  temperature=None, pressure=None, humidity=None,
@@ -70,7 +105,7 @@ class WebPageViewLogDataFormat(LogDataFormat):
 
     レコメンドレポート閲覧ログデータ
     """
-    pass
+    format_type = 'WebPageViewLogDataFormat'
 
 
 class TimeSeriesDataFormat(DataFormat):
@@ -79,7 +114,7 @@ class TimeSeriesDataFormat(DataFormat):
 
     時系列データのデータ形式
     """
-    pass
+    format_type = 'TimeSeriesDataFormat'
 
 
 class SmartMeterDataFormat(TimeSeriesDataFormat):
@@ -88,7 +123,7 @@ class SmartMeterDataFormat(TimeSeriesDataFormat):
 
     スマートメータのデータ形式
     """
-    pass
+    format_type = 'SmartMeterDataFormat'
 
 
 class TwoSelectionsDataFormat(DataFormat):
@@ -97,7 +132,7 @@ class TwoSelectionsDataFormat(DataFormat):
 
     Yes/No 等の2択データ
     """
-    pass
+    format_type = 'TwoSelectionsDataFormat'
 
 
 class IsDoneDataFormat(TwoSelectionsDataFormat):
@@ -106,7 +141,7 @@ class IsDoneDataFormat(TwoSelectionsDataFormat):
 
     レコメンドレポート内容を実行したかどうかの2択データ
     """
-    pass
+    format_type = 'IsDoneDataFormat'
 
 
 class MetaDataFormat(DataFormat):
@@ -115,4 +150,4 @@ class MetaDataFormat(DataFormat):
 
     家族構成データ・住まい地域などのデータ形式
     """
-    pass
+    format_type = 'MetaDataFormat'

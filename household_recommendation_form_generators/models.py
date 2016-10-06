@@ -4,6 +4,8 @@
 from home_electric_usage_recommendation_modules \
     import (SettingTemp, ReduceUsage, ChangeUsage)
 
+from .data_formats import ACLogDataFormat
+
 
 class Household:
     """
@@ -143,14 +145,22 @@ class ClassificationTreeWayFormGenerator(FormGenerator):
 
 
 if __name__ == "__main__":
-    pass
+    CSVFILE_PATH = 'test.csv'
 
     # 始めにレコメンドレポートを発行する家庭群を用意する
 
-    # DB, CSVファイル等からDataFormatを用意して
-    # 家庭ごとにHousehold型へ入れ込む
-    # そのHousehold型の複数のインスタンス達を
-    # HouseholdIteratorへ突っ込む
+    # a. DB, CSVファイル等からDataFormatを用意して
+    # b. 家庭ごとにHousehold型へ入れ込む
+    # c. そのHousehold型の複数のインスタンス達を
+    # c. HouseholdIteratorへ突っ込む
+
+    # a. DataFormatの用意
+    # とりあえずすぐに用意できるACLogDataFormatを利用する
+    # とりあえずCSVファイルから取り出す DBから取り出す場合もある
+    # TODO: 家庭1つ分しかないのでなんとかする
+    # TODO: このデータを入れ込むのが大変
+    with open(CSVFILE_PATH) as csvfile:
+        reader = csv.DictReader(csvfile)
 
     # house_iterを用意したのち
 
