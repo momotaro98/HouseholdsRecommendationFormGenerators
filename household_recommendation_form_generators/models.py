@@ -3,13 +3,15 @@
 # レコメンドレポートに載せる内容モジュールをインポート
 from home_electric_usage_recommendation_modules \
     import (SettingTemp, ReduceUsage, ChangeUsage)
-
-from .data_formats import ACLogDataFormat
+from .data_formats import *
 
 
 class Household:
     """
     家庭はデータの固まりをいくつか持つ
+
+    DataFormat型のモデルをいくつか保持するものが家庭
+    DataFormat型のモデルというのがつまりDBの各テーブルにあたる
 
     データ形式
     時系列データ TimeSeriesDataFormat -> SmartMeterDataFormat
@@ -20,13 +22,46 @@ class Household:
     # 家族構成情報
     # 住まい地域情報
     """
-    def __init__(self, ac_operating_DF=None, smart_meter_DF=None):
+    def __init__(self, smart_meter=None, ac_log=None,
+                 web_view_log=None, is_done=None):
         '''
-        DataFormat型のモデルをいくつか保持するものが家庭
-        DataFormat型のモデルというのがつまりDBの各テーブルにあたる
+        2016-10-06 現状、以下のPractical DataFormatのみを持つようにする
+
+        1. smart_meter: SmartMeterDataFormat のこと
+        2. ac_log: ACLogDataFormat のこと
+        3. web_view_log: WebViewLogDataFormat のこと
+        4. is_done: IsDoneDataFormat のこと
         '''
-        self.ac_operating_DF = ac_operating_DF
-        self.smart_meter_DF = smart_meter_DF
+        self.smart_meter = smart_meter \
+            if isinstance(smart_meter, SmartMeterDataFormat) else None
+        self.ac_log = ac_log \
+            if isinstance(ac_log, ACLogDataFormat) else None
+        self.web_view_log = web_view_log \
+            if isinstance(web_view_log, WebViewLogDataFormat) else None
+        self.is_done = is_done \
+            if isinstance(is_done, IsDoneDataFormat) else None
+
+    # TODO: Householdが必要なときにいつでも自分に関するデータを
+    # CSVなりDBなりから引っ張り出すことのできる機能を持てば良い?
+
+
+class HouseholdGroup:
+    '''
+    Household型のシーケンス
+    '''
+    def __init__(self):
+        self._households_list = []
+
+    def append(self, house):
+        if not isinstance(house, Household):
+            return
+        self._households_list.append(house)
+
+    def get_iter(self):
+        '''
+        for文用に利用する内部リストのイテレータを返すメソッド
+        '''
+        return iter(self._households_list)
 
 
 class HouseholdIterator:
@@ -67,11 +102,11 @@ class FormGenerator:
     '''
     Abstract Model
     '''
-    def __init__(self, house_iter):
+    def __init__(self, house_group):
         """
         初期化ではHouseholdIteratorインスタンスを受け取る
         """
-        self.house_iter = house_iter
+        self.house_group = house_group
 
     def run(self):
         """
@@ -96,7 +131,7 @@ class FormGenerator:
 
         この処理において利用するデータが「反応データ」と呼ぶもので
             * 実行したかどうかの2択データ -> IsDoneDataFormat
-            * レポート画面閲覧ログデータ -> WebPageViewLogDataFormat
+            * レポート画面閲覧ログデータ -> WebViewLogDataFormat
             * 実際の電力消費データ -> ACLogDataFormat 'or' SmartMeterDataFormat
         2016-10-05の段階ではこの3つで行っていく予定としている
         """
@@ -142,39 +177,3 @@ class ClassificationTreeWayFormGenerator(FormGenerator):
 
     def process_data_for_output_recommendation_form(self):
         pass
-
-
-if __name__ == "__main__":
-    CSVFILE_PATH = 'test.csv'
-
-    # 始めにレコメンドレポートを発行する家庭群を用意する
-
-    # a. DB, CSVファイル等からDataFormatを用意して
-    # b. 家庭ごとにHousehold型へ入れ込む
-    # c. そのHousehold型の複数のインスタンス達を
-    # c. HouseholdIteratorへ突っ込む
-
-    # a. DataFormatの用意
-    # とりあえずすぐに用意できるACLogDataFormatを利用する
-    # とりあえずCSVファイルから取り出す DBから取り出す場合もある
-    # TODO: 家庭1つ分しかないのでなんとかする
-    # TODO: このデータを入れ込むのが大変
-    with open(CSVFILE_PATH) as csvfile:
-        reader = csv.DictReader(csvfile)
-
-    # house_iterを用意したのち
-
-    # instanciate EachHomeWayFormGemerator
-    # ehw_fg = EachHomeWayFormGemerator(house_iter)
-    # run EachHomeWayFormGemerator instance
-    # ehw_fg.run()
-
-    # instanciate ClusteringWayFormGenerator
-    # cw_fg = ClusteringWayFormGenerator(house_iter)
-    # run ClusteringWayFormGenerator instance
-    # cw_fg.run()
-
-    # instanciate ClassificationTreeWayFormGenerator
-    # ctw_fg = ClassificationTreeWayFormGenerator(house_iter)
-    # run ClassificationTreeWayFormGenerator instance
-    # ctw_fg.run()

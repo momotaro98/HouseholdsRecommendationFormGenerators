@@ -1,3 +1,6 @@
+from datetime import datetime as dt
+
+
 class DataRows:
     """
     家庭が持つデータ型
@@ -27,7 +30,7 @@ class DataRows:
             return
         self._rows_list.append(row)
 
-    def get_rows_iter(self):
+    def get_iter(self):
         '''
         for文用に利用する内部リストのイテレータを返すメソッド
         '''
@@ -87,25 +90,26 @@ class ACLogDataFormat(ApplianceLogDataFormat):
                  set_temperature=None, wind=None,
                  temperature=None, pressure=None, humidity=None,
                  IP_Address=None):
-        self.timestamp = dt.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+        self.timestamp = dt.strptime(timestamp, '%Y-%m-%d %H:%M:%S')\
+            if isinstance(timestamp, str) else timestamp
         self.on_off = str(on_off) if on_off else on_off
         self.operating = str(operating) if operating else operating
         self.set_temperature = int(set_temperature)\
             if set_temperature else set_temperature
         self.wind = str(wind) if wind else wind
-        self.temperature = float(temperature) if temperature else wind
+        self.temperature = float(temperature) if temperature else temperature
         self.pressure = float(pressure) if pressure else pressure
         self.humidity = float(humidity) if humidity else humidity
         self.IP_Address = str(IP_Address) if IP_Address else IP_Address
 
 
-class WebPageViewLogDataFormat(LogDataFormat):
+class WebViewLogDataFormat(LogDataFormat):
     """
     Practical Model
 
     レコメンドレポート閲覧ログデータ
     """
-    format_type = 'WebPageViewLogDataFormat'
+    format_type = 'WebViewLogDataFormat'
 
 
 class TimeSeriesDataFormat(DataFormat):

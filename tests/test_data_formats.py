@@ -15,7 +15,7 @@ class DataRowsTestCase(TestCase):
         for _ in range(num):
             dr.append(DataFormat())
         count = 0
-        for row in dr.get_rows_iter():
+        for row in dr.get_iter():
             self.assertEqual(row.format_type, 'DataFormat')
             count += 1
         self.assertEqual(count, num)
