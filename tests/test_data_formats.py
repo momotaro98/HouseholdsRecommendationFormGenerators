@@ -9,13 +9,11 @@ class DataRowsTestCase(TestCase):
         '''
         DataRowsの基本機能をテスト
         '''
-        dr = DataRows(DataFormat.format_type)
-        self.assertEqual(dr.format_type, 'DataFormat')
+        dr = DataRows()
         num = 10
         for _ in range(num):
             dr.append(DataFormat())
         count = 0
         for row in dr.get_iter():
-            self.assertEqual(row.format_type, 'DataFormat')
             count += 1
         self.assertEqual(count, num)

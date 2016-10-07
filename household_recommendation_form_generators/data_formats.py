@@ -1,34 +1,24 @@
 from datetime import datetime as dt
 
 
+class DataFormat:
+    """
+    Top Abstract Model
+    データフォーマットのトップ
+
+    意味としてはDBテーブルにおける1カラム分
+    """
+    format_type = 'DataFormat'
+
+
 class DataRows:
     """
     家庭が持つデータ型
 
-    ACLogDataFormat型のシーケンス
-    SmartMeterDataFormat型のシーケンス
-    TwoSelectionsDataFormat型のシーケンス
-    を持つ
-
     意味としてはDBにおけるテーブル・ビュー
     """
-    def __init__(self, format_type):
-        self._format_type = format_type
+    def __init__(self):
         self._rows_list = []  # 実態 型の中にデータの本体の内部リストを持つ
-
-    @property
-    def format_type(self):
-        return self._format_type
-
-    @format_type.setter
-    def format_type(self, format_type):
-        raise Exception  # TODO: ちゃんとしたエラーを出すようにする
-
-    def append(self, row):
-        # リストに入れる型がDataFormat型であるかチェック
-        if not isinstance(row, DataFormat):
-            return
-        self._rows_list.append(row)
 
     def get_iter(self):
         '''
@@ -36,14 +26,45 @@ class DataRows:
         '''
         return iter(self._rows_list)
 
+    def append(self, row):
+        # リストに入れる型がDataFormat型であるかチェック
+        if not self._is_the_type(row):
+            raise Exception  # TODO: ちゃんとしたエラーを出すようにする
+        self._rows_list.append(row)
 
-class DataFormat:
-    """
-    Top Abstract Model
+    def _is_the_type(self, row):
+        return isinstance(row, DataFormat)
 
-    意味としてはDBテーブルにおける1カラム分
-    """
-    format_type = 'DataFormat'
+    def get_from_csvfile(home_num, duration):
+        '''
+        CSVファイルからデータを取得する場合
+        '''
+        pass
+
+    def get_from_DB(home_num, duration):
+        '''
+        CSVファイルからデータを取得する場合
+        '''
+        pass
+
+    '''
+    CSVFILE_PATH = 'test.csv'
+    with open(CSVFILE_PATH) as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            ac_log.append(
+                ACLogDataFormat(
+                timestamp=row['timestamp'],
+                on_off=row['on_off'],
+                operating=row['operating'],
+                set_temperature=row['set_temperature'],
+                wind=row['wind'],
+                temperature=row['temperature'],
+                pressure=row['pressure'],
+                humidity=row['humidity'],
+                IP_Address=row['IP_Address'],
+                ))
+    '''
 
 
 class LogDataFormat(DataFormat):
@@ -103,6 +124,11 @@ class ACLogDataFormat(ApplianceLogDataFormat):
         self.IP_Address = str(IP_Address) if IP_Address else IP_Address
 
 
+class ACLogDataRows(DataRows):
+    def _is_the_type(self, row):
+        return isinstance(row, ACLogDataFormat)
+
+
 class WebViewLogDataFormat(LogDataFormat):
     """
     Practical Model
@@ -110,6 +136,11 @@ class WebViewLogDataFormat(LogDataFormat):
     レコメンドレポート閲覧ログデータ
     """
     format_type = 'WebViewLogDataFormat'
+
+
+class WebViewLogDataRows(DataRows):
+    def _is_the_type(self, row):
+        return isinstance(row, WebViewLogDataFormat)
 
 
 class TimeSeriesDataFormat(DataFormat):
@@ -130,6 +161,11 @@ class SmartMeterDataFormat(TimeSeriesDataFormat):
     format_type = 'SmartMeterDataFormat'
 
 
+class SmartMeterDataRows(DataRows):
+    def _is_the_type(self, row):
+        return isinstance(row, SmartMeterDataFormat)
+
+
 class TwoSelectionsDataFormat(DataFormat):
     """
     Abstract Model
@@ -146,6 +182,11 @@ class IsDoneDataFormat(TwoSelectionsDataFormat):
     レコメンドレポート内容を実行したかどうかの2択データ
     """
     format_type = 'IsDoneDataFormat'
+
+
+class IsDoneDataRows(DataRows):
+    def _is_the_type(self, row):
+        return isinstance(row, IsDoneDataFormat)
 
 
 class MetaDataFormat(DataFormat):

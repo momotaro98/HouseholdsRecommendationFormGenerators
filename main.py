@@ -4,74 +4,61 @@ from household_recommendation_form_generators import *
 
 
 if __name__ == "__main__":
-    CSVFILE_PATH = 'test.csv'
+    '''
+    # アプリケーション側(FormGenerator側)が利用する家庭群を用意する処理
+    # を始めに行う必要がある
 
-    # 始めにレコメンドレポートを発行する家庭群を用意する
+    # 前処理段階ではデータを格納しない
+    # アプリケーションが必要なときにデータを得られるようにする
+    # 家庭番号(user_id)とデータ期間(timestamp)のみが必要(のはず)
+    # 家庭番号はHouseholdインスタンスが持つ各DataRows型のインスタンスが保持する
+    # 期間はアプリケーション側が指定する
 
-    # a. DB, CSVファイル等からDataFormatを用意して
-    # b. 家庭ごとにHousehold型へ入れ込む
-    # c. そのHousehold型の複数のインスタンス達を
-    # c. HouseholdIteratorへ突っ込む
+    # 研究における家庭番号割り当てについて
 
-    # a. DataFormatの用意
-    # とりあえずすぐに用意できるACLogDataFormatを利用する
-    # とりあえずCSVファイルから取り出す DBから取り出す場合もある
-    # TODO: 家庭1つ分しかないのでなんとかする
-    # TODO: このデータを入れ込むのが大変
+    栗原 家庭
+    1000番台を割り当てる
+    実際数 1001〜1016
+
+    武蔵小杉 家庭
+    2000番台を割り当てる
+    実際数 2001〜2160
+
+    池田実験協力家庭
+    3000番台を割り当てる
+    実際数 3001〜3005
+    '''
+
+    ### *** *** ### 家庭グループ準備処理 Start
 
     # Instanciate HouseholdGroup
     house_group = HouseholdGroup()
+    for home_id in range(1001, 4000):
+        house = Household(home_id)
+        house_group.append(house)
 
-    # 入力データ側で家庭ごと、必要データを管理する必要がある
+    ### *** *** ### 家庭グループ準備処理 End
+
+    # アプリケーション側
+    #### ここからつづき 2016-10-07
+    #### ここからつづき 2016-10-07
+    #### ここからつづき 2016-10-07
+    #### ここからつづき 2016-10-07
+    #### ここからつづき 2016-10-07
+    #### ここからつづき 2016-10-07
+    #### ここからつづき 2016-10-07
+    #### ここからつづき 2016-10-07
+    #### ここからつづき 2016-10-07
+    #### ここからつづき 2016-10-07
+    #### ここからつづき 2016-10-07
+    #### ここからつづき 2016-10-07
     '''
-    for house_num in houses:
-        # EACH_HOUSE_START
-        house = Household()
-        rows = SQL('select * from table where home_num=house_num')
-        # ある家庭のある期間のあるデータ
-        # この中で処理する
-        for row in rows:
-            pass
-        # EACH_HOUSE_END
+    for house in house_group.get_iter():
+        ac_log = house.get_ac_log(duration)
     '''
+        # アプリケーション側はそのhouseインスタンスの家庭の指定の期間のデータが欲しい(durationのこと)
 
-    # EACH_HOUSE_START
-
-    # 必要なDataRowsを用意する
-    # 1種類目のDataRows
-    ac_log_DF = DataRows(ACLogDataFormat.format_type)  # first DataRows
-    with open(CSVFILE_PATH) as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            ac_log_DF.append(
-                ACLogDataFormat(
-                timestamp=row['timestamp'],
-                on_off=row['on_off'],
-                operating=row['operating'],
-                set_temperature=row['set_temperature'],
-                wind=row['wind'],
-                temperature=row['temperature'],
-                pressure=row['pressure'],
-                humidity=row['humidity'],
-                IP_Address=row['IP_Address'],
-                ))
-
-    # Instanciate Household with DataRows_es
-    house = Household(ac_log=ac_log_DF)
-    # house = Household(smart_meter=XXX, is_done=XXX)  # という感じで
-
-    # HouseholdインスタンスにDataRowsを入れ込む
-    house_group.append(house)
-
-    # EACH_HOUSE_END
-
-    # データ入力、HouseholdIterator準備フェーズ終了
-
-    # FormGenerator 実行フェーズ開始
-
-    # お試し
-    for hosue in house_group.get_iter():
-        print("house: ", house)
+    # FormGeneratorアプリケーション 実行フェーズ開始
 
     # instanciate EachHomeWayFormGemerator
     # ehw_fg = EachHomeWayFormGemerator(house_group)

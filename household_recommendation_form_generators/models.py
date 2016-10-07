@@ -21,28 +21,40 @@ class Household:
     MetaDataFormat
     # 家族構成情報
     # 住まい地域情報
+
+    2016-10-06 現状、以下のPractical DataFormatのみを持つようにする
+
+    1. SmartMeterDataFormat
+    2. ACLogDataFormat
+    3. WebViewLogDataFormat
+    4. IsDoneDataFormat
     """
-    def __init__(self, smart_meter=None, ac_log=None,
-                 web_view_log=None, is_done=None):
-        '''
-        2016-10-06 現状、以下のPractical DataFormatのみを持つようにする
+    def __init__(self, home_id):
+        self.id = home_id
 
-        1. smart_meter: SmartMeterDataFormat のこと
-        2. ac_log: ACLogDataFormat のこと
-        3. web_view_log: WebViewLogDataFormat のこと
-        4. is_done: IsDoneDataFormat のこと
-        '''
-        self.smart_meter = smart_meter \
-            if isinstance(smart_meter, SmartMeterDataFormat) else None
-        self.ac_log = ac_log \
-            if isinstance(ac_log, ACLogDataFormat) else None
-        self.web_view_log = web_view_log \
-            if isinstance(web_view_log, WebViewLogDataFormat) else None
-        self.is_done = is_done \
-            if isinstance(is_done, IsDoneDataFormat) else None
+    def get_smart_meter(self, duration):
+        pass
 
-    # TODO: Householdが必要なときにいつでも自分に関するデータを
-    # CSVなりDBなりから引っ張り出すことのできる機能を持てば良い?
+    def get_ac_log(self, duration):
+        #### ここからつづき 2016-10-07
+        #### ここからつづき 2016-10-07
+        #### ここからつづき 2016-10-07
+        #### ここからつづき 2016-10-07
+        #### ここからつづき 2016-10-07
+        #### ここからつづき 2016-10-07
+        #### ここからつづき 2016-10-07
+        #### ここからつづき 2016-10-07
+        #### ここからつづき 2016-10-07
+        #### ここからつづき 2016-10-07
+        #### ここからつづき 2016-10-07
+        #### ここからつづき 2016-10-07
+        pass
+
+    def get_web_view_log(self, duration):
+        pass
+
+    def get_is_done(self):
+        pass
 
 
 class HouseholdGroup:
