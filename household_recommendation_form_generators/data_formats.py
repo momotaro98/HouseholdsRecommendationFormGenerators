@@ -1,4 +1,5 @@
 from datetime import datetime as dt
+import csv
 
 
 class DataFormat:
@@ -7,6 +8,8 @@ class DataFormat:
     データフォーマットのトップ
 
     意味としてはDBテーブルにおける1カラム分
+
+    JavaでいうDTOにあたる
     """
     format_type = 'DataFormat'
 
@@ -16,17 +19,14 @@ class DataRows:
     家庭が持つデータ型
 
     意味としてはDBにおけるテーブル・ビュー
+
+    JavaでいうDAOにあたる?
     """
-    def __init__(self):
+    def __init__(self, home_id=None):
+        self.home_id = home_id
         self._rows_list = []  # 実態 型の中にデータの本体の内部リストを持つ
 
-    def get_iter(self):
-        '''
-        for文用に利用する内部リストのイテレータを返すメソッド
-        '''
-        return iter(self._rows_list)
-
-    def append(self, row):
+    def _append(self, row):
         # リストに入れる型がDataFormat型であるかチェック
         if not self._is_the_type(row):
             raise Exception  # TODO: ちゃんとしたエラーを出すようにする
@@ -35,36 +35,12 @@ class DataRows:
     def _is_the_type(self, row):
         return isinstance(row, DataFormat)
 
-    def get_from_csvfile(home_num, duration):
-        '''
-        CSVファイルからデータを取得する場合
-        '''
-        pass
+    def get_rows_iter(self):
+        self._query_and_append()
+        return iter(self._rows_list)
 
-    def get_from_DB(home_num, duration):
-        '''
-        CSVファイルからデータを取得する場合
-        '''
+    def _query_and_append(self):
         pass
-
-    '''
-    CSVFILE_PATH = 'test.csv'
-    with open(CSVFILE_PATH) as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            ac_log.append(
-                ACLogDataFormat(
-                timestamp=row['timestamp'],
-                on_off=row['on_off'],
-                operating=row['operating'],
-                set_temperature=row['set_temperature'],
-                wind=row['wind'],
-                temperature=row['temperature'],
-                pressure=row['pressure'],
-                humidity=row['humidity'],
-                IP_Address=row['IP_Address'],
-                ))
-    '''
 
 
 class LogDataFormat(DataFormat):
@@ -125,8 +101,37 @@ class ACLogDataFormat(ApplianceLogDataFormat):
 
 
 class ACLogDataRows(DataRows):
+    def __init__(self, home_id=None):
+        super().__init__(home_id)
+
     def _is_the_type(self, row):
         return isinstance(row, ACLogDataFormat)
+
+    def get_rows_iter(self, duration=None):
+        self._query_and_append(duration)
+        return iter(self._rows_list)
+
+    def _query_and_append(self, duration=None):
+        '''
+        Query from any data source (CSV file or DB) and
+        append ACLogDataFormat to self._rows_list
+        '''
+        CSVFILE_PATH = 'test.csv'
+        with open(CSVFILE_PATH) as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                self._append(
+                    ACLogDataFormat(
+                    timestamp=row['timestamp'],
+                    on_off=row['on_off'],
+                    operating=row['operating'],
+                    set_temperature=row['set_temperature'],
+                    wind=row['wind'],
+                    temperature=row['temperature'],
+                    pressure=row['pressure'],
+                    humidity=row['humidity'],
+                    IP_Address=row['IP_Address'],
+                    ))
 
 
 class WebViewLogDataFormat(LogDataFormat):

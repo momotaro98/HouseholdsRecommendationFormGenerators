@@ -1,4 +1,5 @@
 import csv
+import datetime
 
 from household_recommendation_form_generators import *
 
@@ -40,22 +41,12 @@ if __name__ == "__main__":
     ### *** *** ### 家庭グループ準備処理 End
 
     # アプリケーション側
-    #### ここからつづき 2016-10-07
-    #### ここからつづき 2016-10-07
-    #### ここからつづき 2016-10-07
-    #### ここからつづき 2016-10-07
-    #### ここからつづき 2016-10-07
-    #### ここからつづき 2016-10-07
-    #### ここからつづき 2016-10-07
-    #### ここからつづき 2016-10-07
-    #### ここからつづき 2016-10-07
-    #### ここからつづき 2016-10-07
-    #### ここからつづき 2016-10-07
-    #### ここからつづき 2016-10-07
-    '''
     for house in house_group.get_iter():
-        ac_log = house.get_ac_log(duration)
-    '''
+        the_house_ac_log = house.get_ac_log()  # DataRowsはHouseholdインスタンスから取得する
+        duration = '2016-08-01'
+        print("house.id: ", house.id)
+        for row in the_house_ac_log.get_rows_iter(duration):
+            print(row.timestamp, row.on_off)
         # アプリケーション側はそのhouseインスタンスの家庭の指定の期間のデータが欲しい(durationのこと)
 
     # FormGeneratorアプリケーション 実行フェーズ開始

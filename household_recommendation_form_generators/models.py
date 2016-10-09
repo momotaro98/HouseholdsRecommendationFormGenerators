@@ -32,25 +32,13 @@ class Household:
     def __init__(self, home_id):
         self.id = home_id
 
-    def get_smart_meter(self, duration):
+    def get_smart_meter(self):
         pass
 
-    def get_ac_log(self, duration):
-        #### ここからつづき 2016-10-07
-        #### ここからつづき 2016-10-07
-        #### ここからつづき 2016-10-07
-        #### ここからつづき 2016-10-07
-        #### ここからつづき 2016-10-07
-        #### ここからつづき 2016-10-07
-        #### ここからつづき 2016-10-07
-        #### ここからつづき 2016-10-07
-        #### ここからつづき 2016-10-07
-        #### ここからつづき 2016-10-07
-        #### ここからつづき 2016-10-07
-        #### ここからつづき 2016-10-07
-        pass
+    def get_ac_log(self):
+        return ACLogDataRows(self.id)
 
-    def get_web_view_log(self, duration):
+    def get_web_view_log(self):
         pass
 
     def get_is_done(self):
