@@ -9,9 +9,9 @@ class HouseholdIteratorTestCase(TestCase):
         '''
         Household型を用意しておく
         '''
-        self.a_house = Household()
+        self.a_house = Household(home_id=100)
         self.list_num = 10
-        self.household_list = [Household() for _ in range(self.list_num)]
+        self.household_list = [Household(num) for num in range(self.list_num)]
 
     def test_instanciation(self):
         '''
@@ -38,9 +38,9 @@ class HouseholdIteratorTestCase(TestCase):
 
     def test_append_isHousehold(self):
         house_iter = HouseholdIterator()
-        house_iter.append(Household())
+        house_iter.append(Household(home_id=101))
         house_iter.append('Household')  # Household型ではないものを加えようとする
-        house_iter.append(Household())
+        house_iter.append(Household(home_id=102))
         self.assertEqual(len(house_iter._households_list), 2)
         for house in house_iter:
             self.assertIsInstance(house, Household)

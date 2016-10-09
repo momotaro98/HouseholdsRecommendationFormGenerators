@@ -3,11 +3,15 @@
 # レコメンドレポートに載せる内容モジュールをインポート
 from home_electric_usage_recommendation_modules \
     import (SettingTemp, ReduceUsage, ChangeUsage)
+from .data_formats import *
 
 
 class Household:
     """
     家庭はデータの固まりをいくつか持つ
+
+    DataFormat型のモデルをいくつか保持するものが家庭
+    DataFormat型のモデルというのがつまりDBの各テーブルにあたる
 
     データ形式
     時系列データ TimeSeriesDataFormat -> SmartMeterDataFormat
@@ -17,14 +21,47 @@ class Household:
     MetaDataFormat
     # 家族構成情報
     # 住まい地域情報
+
+    2016-10-06 現状、以下のPractical DataFormatのみを持つようにする
+
+    1. SmartMeterDataFormat
+    2. ACLogDataFormat
+    3. WebViewLogDataFormat
+    4. IsDoneDataFormat
     """
-    def __init__(self, ac_operating_DF=None, smart_meter_DF=None):
+    def __init__(self, home_id):
+        self.id = home_id
+
+    def get_smart_meter(self):
+        pass
+
+    def get_ac_log(self):
+        return ACLogDataRows(self.id)
+
+    def get_web_view_log(self):
+        pass
+
+    def get_is_done(self):
+        pass
+
+
+class HouseholdGroup:
+    '''
+    Household型のシーケンス
+    '''
+    def __init__(self):
+        self._households_list = []
+
+    def append(self, house):
+        if not isinstance(house, Household):
+            return
+        self._households_list.append(house)
+
+    def get_iter(self):
         '''
-        DataFormat型のモデルをいくつか保持するものが家庭
-        DataFormat型のモデルというのがつまりDBの各テーブルにあたる
+        for文用に利用する内部リストのイテレータを返すメソッド
         '''
-        self.ac_operating_DF = ac_operating_DF
-        self.smart_meter_DF = smart_meter_DF
+        return iter(self._households_list)
 
 
 class HouseholdIterator:
@@ -65,11 +102,11 @@ class FormGenerator:
     '''
     Abstract Model
     '''
-    def __init__(self, house_iter):
+    def __init__(self, house_group):
         """
         初期化ではHouseholdIteratorインスタンスを受け取る
         """
-        self.house_iter = house_iter
+        self.house_group = house_group
 
     def run(self):
         """
@@ -94,7 +131,7 @@ class FormGenerator:
 
         この処理において利用するデータが「反応データ」と呼ぶもので
             * 実行したかどうかの2択データ -> IsDoneDataFormat
-            * レポート画面閲覧ログデータ -> WebPageViewLogDataFormat
+            * レポート画面閲覧ログデータ -> WebViewLogDataFormat
             * 実際の電力消費データ -> ACLogDataFormat 'or' SmartMeterDataFormat
         2016-10-05の段階ではこの3つで行っていく予定としている
         """
@@ -140,31 +177,3 @@ class ClassificationTreeWayFormGenerator(FormGenerator):
 
     def process_data_for_output_recommendation_form(self):
         pass
-
-
-if __name__ == "__main__":
-    pass
-
-    # 始めにレコメンドレポートを発行する家庭群を用意する
-
-    # DB, CSVファイル等からDataFormatを用意して
-    # 家庭ごとにHousehold型へ入れ込む
-    # そのHousehold型の複数のインスタンス達を
-    # HouseholdIteratorへ突っ込む
-
-    # house_iterを用意したのち
-
-    # instanciate EachHomeWayFormGemerator
-    # ehw_fg = EachHomeWayFormGemerator(house_iter)
-    # run EachHomeWayFormGemerator instance
-    # ehw_fg.run()
-
-    # instanciate ClusteringWayFormGenerator
-    # cw_fg = ClusteringWayFormGenerator(house_iter)
-    # run ClusteringWayFormGenerator instance
-    # cw_fg.run()
-
-    # instanciate ClassificationTreeWayFormGenerator
-    # ctw_fg = ClassificationTreeWayFormGenerator(house_iter)
-    # run ClassificationTreeWayFormGenerator instance
-    # ctw_fg.run()
