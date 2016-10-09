@@ -9,11 +9,12 @@ class DataRowsTestCase(TestCase):
         '''
         DataRowsの基本機能をテスト
         '''
-        dr = DataRows()
+        home_id = 333
+        dr = DataRows(home_id)
         num = 10
         for _ in range(num):
-            dr.append(DataFormat())
+            dr._append(DataFormat())
         count = 0
-        for row in dr.get_iter():
+        for row in dr.get_rows_iter():
             count += 1
         self.assertEqual(count, num)

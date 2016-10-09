@@ -122,15 +122,15 @@ class ACLogDataRows(DataRows):
             for row in reader:
                 self._append(
                     ACLogDataFormat(
-                    timestamp=row['timestamp'],
-                    on_off=row['on_off'],
-                    operating=row['operating'],
-                    set_temperature=row['set_temperature'],
-                    wind=row['wind'],
-                    temperature=row['temperature'],
-                    pressure=row['pressure'],
-                    humidity=row['humidity'],
-                    IP_Address=row['IP_Address'],
+                        timestamp=row['timestamp'],
+                        on_off=row['on_off'],
+                        operating=row['operating'],
+                        set_temperature=row['set_temperature'],
+                        wind=row['wind'],
+                        temperature=row['temperature'],
+                        pressure=row['pressure'],
+                        humidity=row['humidity'],
+                        IP_Address=row['IP_Address'],
                     ))
 
 
