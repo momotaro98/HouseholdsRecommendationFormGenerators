@@ -22,8 +22,9 @@ class DataRows:
 
     JavaでいうDAOにあたる?
     """
-    def __init__(self, home_id=None):
-        self.home_id = home_id
+    def __init__(self, home_id=None, duration=None):
+        self._home_id = home_id
+        self._duration = duration
         self._rows_list = []  # 実態 型の中にデータの本体の内部リストを持つ
 
     def _append(self, row):
@@ -101,17 +102,24 @@ class ACLogDataFormat(ApplianceLogDataFormat):
 
 
 class ACLogDataRows(DataRows):
-    def __init__(self, home_id=None):
-        super().__init__(home_id)
+    '''
+    DAO like object for ACLogDataFormat class
+    '''
+    def __init__(self, home_id=None, duration=None):
+        super().__init__(home_id, duration)
 
     def _is_the_type(self, row):
         return isinstance(row, ACLogDataFormat)
 
-    def get_rows_iter(self, duration=None):
-        self._query_and_append(duration)
+    def get_rows_iter(self, home_id=None, duration=None):
+        if home_id is not None:
+            self._home_id = home_id
+        if duration is not None:
+            self._duration = duration
+        self._query_and_append()
         return iter(self._rows_list)
 
-    def _query_and_append(self, duration=None):
+    def _query_and_append(self):
         '''
         Query from any data source (CSV file or DB) and
         append ACLogDataFormat to self._rows_list
@@ -131,7 +139,7 @@ class ACLogDataRows(DataRows):
                         pressure=row['pressure'],
                         humidity=row['humidity'],
                         IP_Address=row['IP_Address'],
-                    ))
+                        ))
 
 
 class WebViewLogDataFormat(LogDataFormat):

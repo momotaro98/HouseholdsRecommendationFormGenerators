@@ -121,6 +121,7 @@ class FormGenerator:
         self.process_data_for_output_recommendation_form()
 
     def process_data_for_preprocessing(self):
+        # To Be Continued 2016-10-10
         """
         事前処理にあたる反応データ処理用のメソッド
 

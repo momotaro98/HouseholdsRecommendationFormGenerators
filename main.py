@@ -45,7 +45,7 @@ if __name__ == "__main__":
         the_house_ac_log = house.get_ac_log()  # DataRowsはHouseholdインスタンスから取得する
         duration = '2016-08-01'
         print("house.id: ", house.id)
-        for row in the_house_ac_log.get_rows_iter(duration):
+        for row in the_house_ac_log.get_rows_iter(duration=duration):
             print(row.timestamp, row.on_off)
         # アプリケーション側はそのhouseインスタンスの家庭の指定の期間のデータが欲しい(durationのこと)
 
