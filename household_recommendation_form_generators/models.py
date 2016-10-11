@@ -111,8 +111,12 @@ class RecommendModulesUseFlags:
     use SettingTemp flag
     use ReduceUsage flag
     use ChangeUsage flag
+
+    First, the flags are True.
+    At the preprocess_with_reaction_data method in The FormGenerator's class,
+    each flag gets False
     '''
-    def __init__(self, use_ST=False, use_RU=False, use_CU=False):
+    def __init__(self, use_ST=True, use_RU=True, use_CU=True):
         self._use_ST = use_ST
         self._use_RU = use_RU
         self._use_CU = use_CU
@@ -147,43 +151,40 @@ class RecommendModulesUseFlags:
             return
         self._use_CU = t_or_f
 
+    def reset(self):
+        self.use_ST = True
+        self.use_RU = True
+        self.use_CU = True
 
-class FormGenerator:
+
+class UseFlagSwitcher:
     '''
-    Abstract Model
+    class for Ikeda's Research
+    switcher for Household's ModulesUseFlags
     '''
-    def __init__(self, house_group):
-        """
-        初期化ではHouseholdGroupインスタンスを受け取る
-        """
-        self.house_group = house_group
+    def __init__(self, house):
+        '''
+        receive Household instance
+        '''
+        if not isinstance(house, Household):
+            raise Exception  # TODO: write valid error
+        self.house = house
 
     def run(self):
-        """
-        フォームジェネレータを実行するメソッド
-        """
-        # 提案手法では分類木生成・ライバル手法では個別処理にあたる
-        # データ前処理フェーズ
-        self.preprocess_with_reaction_data()
-
-        # home_electric_usage_recommendation_modules を利用して
-        # レコメンド内容を生成する処理フェーズ
-        self.process_for_output_form()
-
-    def preprocess_with_reaction_data(self):
         # To Be Continued 2016-10-10
         """
-        事前処理にあたる反応データ処理用のメソッド
+        機能としてModulesUseFlagsのTrueをFalseにするメソッド
+        各Householdが持つReaction Dataをもとにして
+        各Householdが持つModulesUseFlagsのスイッチングをする
 
         * ここが研究要素であり提案手法・ライバル手法で異なる
-            * 提案手法ではここで木構造を生成する
-            * 個別手法では個別家庭毎でどのレポート内容を実行するかの処理を行う
-            * クラスタリング手法ではクラスタリング処理を行う
+            * 提案手法では生成済みの木構造からFlagを上げたり下げたりする
 
         この処理において利用するデータが「反応データ」と呼ぶもので
             * 実行したかどうかの2択データ -> IsDoneDataFormat
             * レポート画面閲覧ログデータ -> WebViewLogDataFormat
             * 実際の電力消費データ -> ACLogDataFormat 'or' SmartMeterDataFormat
+
         2016-10-05の段階ではこの3つで行っていく予定としている
 
         2016-10-11 written
@@ -194,43 +195,56 @@ class FormGenerator:
         """
         pass
 
-    def process_for_output_form(self):
-        """
-        レコメンドレポート生成用の処理をする部分
-        home_electric_usage_recommendation_modules ライブラリはここで利用する
+    def reset(self):
+        '''
+        Reset the Household's ModulesUseFlags (All flags to True)
+        '''
+        self.house.module_use_flgas.reset()
 
-        この処理において利用するデータが「解析用データ」と呼ぶもので
-            * 実際の電力消費データ -> ACLogDataFormat 'or' SmartMeterDataFormat
-        を利用する
-        """
+
+class SimpleWayUseFlagSwitcher(UseFlagSwitcher):
+    '''
+    提案手法に対するライバル手法
+    '''
+    def run(self):
         pass
+
+
+class ClassificationTreeWayUseFlagSwitcher(UseFlagSwitcher):
+    '''
+    提案手法(の予定)
+    '''
+    def run(self):
+        pass
+
+
+class FormGenerator:
+    '''
+    class for generating recommendation form
+
+    * レコメンドレポート生成用の処理をする部分
+    * home_electric_usage_recommendation_modules
+    ライブラリはここで利用する
+    * 実際の電力消費データ -> ACLogDataFormat 'or' SmartMeterDataFormat
+    を利用する
+    '''
+    def __init__(self, house):
+        '''
+        初期化でHouseholdインスタンスを受け取る
+        '''
+        self.house = house
+
+    def run(self):
+        '''
+        run the FormGenerator
+
+        * Householdインスタンスが持つModulesUseFlagsの
+        フラグのTrue or Falseで対象のモジュールを実行するか判断する
+        '''
+        self.generate_html()
 
     def generate_html(self):
         """
         HTML文を吐き出すメソッド
         """
-        pass
-
-
-class EachHomeWayFormGemerator(FormGenerator):
-    def preprocess_with_reaction_data(self):
-        pass
-
-    def process_for_output_form(self):
-        pass
-
-
-class ClusteringWayFormGenerator(FormGenerator):
-    def preprocess_with_reaction_data(self):
-        pass
-
-    def process_for_output_form(self):
-        pass
-
-
-class ClassificationTreeWayFormGenerator(FormGenerator):
-    def preprocess_with_reaction_data(self):
-        pass
-
-    def process_for_output_form(self):
         pass
