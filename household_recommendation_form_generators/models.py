@@ -31,6 +31,8 @@ class Household:
     """
     def __init__(self, home_id):
         self.id = home_id
+        # Instanciate ModulesUseFlags class
+        self.module_use_flgas = RecommendModulesUseFlags()
 
     def get_smart_meter(self):
         pass
@@ -65,9 +67,11 @@ class HouseholdGroup:
 
 
 class HouseholdIterator:
-    """
+    '''
     Householdモデルを持つイテレータ
-    """
+
+    2016-10-05 時点で不必要で,代わりにHouseholdGroupを利用する
+    '''
     def __init__(self):
         self._households_list = []
         self._i = 0
@@ -98,13 +102,59 @@ class HouseholdIterator:
         return isinstance(h, Household)
 
 
+class RecommendModulesUseFlags:
+    '''
+    Ikeda's Reserach Factor
+    Recommendation modules use flags to each household
+
+    Flags
+    use SettingTemp flag
+    use ReduceUsage flag
+    use ChangeUsage flag
+    '''
+    def __init__(self, use_ST=False, use_RU=False, use_CU=False):
+        self._use_ST = use_ST
+        self._use_RU = use_RU
+        self._use_CU = use_CU
+
+    @property
+    def use_ST(self):
+        return self._use_ST
+
+    @use_ST.setter
+    def use_ST(self, t_or_f):
+        if not isinstance(t_or_f, bool):
+            return
+        self._use_ST = t_or_f
+
+    @property
+    def use_RU(self):
+        return self._use_RU
+
+    @use_RU.setter
+    def use_RU(self, t_or_f):
+        if not isinstance(t_or_f, bool):
+            return
+        self._use_RU = t_or_f
+
+    @property
+    def use_CU(self):
+        return self._use_CU
+
+    @use_CU.setter
+    def use_CU(self, t_or_f):
+        if not isinstance(t_or_f, bool):
+            return
+        self._use_CU = t_or_f
+
+
 class FormGenerator:
     '''
     Abstract Model
     '''
     def __init__(self, house_group):
         """
-        初期化ではHouseholdIteratorインスタンスを受け取る
+        初期化ではHouseholdGroupインスタンスを受け取る
         """
         self.house_group = house_group
 
@@ -114,13 +164,13 @@ class FormGenerator:
         """
         # 提案手法では分類木生成・ライバル手法では個別処理にあたる
         # データ前処理フェーズ
-        self.process_data_for_preprocessing()
+        self.preprocess_with_reaction_data()
 
         # home_electric_usage_recommendation_modules を利用して
         # レコメンド内容を生成する処理フェーズ
-        self.process_data_for_output_recommendation_form()
+        self.process_for_output_form()
 
-    def process_data_for_preprocessing(self):
+    def preprocess_with_reaction_data(self):
         # To Be Continued 2016-10-10
         """
         事前処理にあたる反応データ処理用のメソッド
@@ -135,10 +185,16 @@ class FormGenerator:
             * レポート画面閲覧ログデータ -> WebViewLogDataFormat
             * 実際の電力消費データ -> ACLogDataFormat 'or' SmartMeterDataFormat
         2016-10-05の段階ではこの3つで行っていく予定としている
+
+        2016-10-11 written
+        上記のデータを利用してレコメンドモジュールを
+        利用するかしないかのフラグを立てたり立てなかったりする
+        この「どういった基準でフラグを立てるか」が
+        研究要素となる
         """
         pass
 
-    def process_data_for_output_recommendation_form(self):
+    def process_for_output_form(self):
         """
         レコメンドレポート生成用の処理をする部分
         home_electric_usage_recommendation_modules ライブラリはここで利用する
@@ -157,24 +213,24 @@ class FormGenerator:
 
 
 class EachHomeWayFormGemerator(FormGenerator):
-    def process_data_for_preprocessing(self):
+    def preprocess_with_reaction_data(self):
         pass
 
-    def process_data_for_output_recommendation_form(self):
+    def process_for_output_form(self):
         pass
 
 
 class ClusteringWayFormGenerator(FormGenerator):
-    def process_data_for_preprocessing(self):
+    def preprocess_with_reaction_data(self):
         pass
 
-    def process_data_for_output_recommendation_form(self):
+    def process_for_output_form(self):
         pass
 
 
 class ClassificationTreeWayFormGenerator(FormGenerator):
-    def process_data_for_preprocessing(self):
+    def preprocess_with_reaction_data(self):
         pass
 
-    def process_data_for_output_recommendation_form(self):
+    def process_for_output_form(self):
         pass

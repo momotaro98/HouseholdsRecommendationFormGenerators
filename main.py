@@ -6,8 +6,8 @@ from household_recommendation_form_generators import *
 
 if __name__ == "__main__":
     '''
-    # アプリケーション側(FormGenerator側)が利用する家庭群を用意する処理
-    # を始めに行う必要がある
+    # アプリケーション側(FormGenerator側)が利用する家庭群を
+    # 用意する処理を始めに行う必要がある
 
     # 前処理段階ではデータを格納しない
     # アプリケーションが必要なときにデータを得られるようにする
