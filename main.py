@@ -5,9 +5,9 @@ from household_recommendation_form_generators import *
 
 
 if __name__ == "__main__":
-    '''
-    # アプリケーション側(FormGenerator側)が利用する家庭群を用意する処理
-    # を始めに行う必要がある
+    """
+    # アプリケーション側(FormGenerator側)が利用する家庭群を
+    # 用意する処理を始めに行う必要がある
 
     # 前処理段階ではデータを格納しない
     # アプリケーションが必要なときにデータを得られるようにする
@@ -28,40 +28,82 @@ if __name__ == "__main__":
     池田実験協力家庭
     3000番台を割り当てる
     実際数 3001〜3005
-    '''
+    """
 
-    ### *** *** ### 家庭グループ準備処理 Start
+    ### *** 家庭グループ準備処理 Start *** ###
 
     # Instanciate HouseholdGroup
-    house_group = HouseholdGroup()
+    house_group = HouseholdGroup()  # All ModulesUseFlags are True
     for home_id in range(1001, 4000):
         house = Household(home_id)
         house_group.append(house)
 
-    ### *** *** ### 家庭グループ準備処理 End
+    ### *** 家庭グループ準備処理 End *** ###
 
-    # アプリケーション側
+    """
+    # アプリケーション側 実行例
     for house in house_group.get_iter():
-        the_house_ac_log = house.get_ac_log()  # DataRowsはHouseholdインスタンスから取得する
+        # Get the house's ACLogDataRows instance
+        # DataRowsはHouseholdインスタンスから取得する
+        the_house_ac_log = house.get_ac_log()
         duration = '2016-08-01'
         print("house.id: ", house.id)
-        for row in the_house_ac_log.get_rows_iter(duration):
+        for row in the_house_ac_log.get_rows_iter(duration=duration):
             print(row.timestamp, row.on_off)
-        # アプリケーション側はそのhouseインスタンスの家庭の指定の期間のデータが欲しい(durationのこと)
+        # アプリケーション側はそのhouseインスタンスの家庭の
+        # 指定の期間のデータが欲しい(durationのこと)
+    """
 
-    # FormGeneratorアプリケーション 実行フェーズ開始
+    ###=== FormGeneratorアプリケーション 実行フェーズ Start ===###
 
-    # instanciate EachHomeWayFormGemerator
-    # ehw_fg = EachHomeWayFormGemerator(house_group)
-    # run EachHomeWayFormGemerator instance
-    # ehw_fg.run()
+    ###+++ Non Switching Case Start +++###
+    # switch flags phase
+    ######## Nothing To Do ########
+    ######## Nothing To Do ########
+    ######## Nothing To Do ########
+    # generate form phase
+    for house in house_group.get_iter():
+        # TO BE CONTINUED 2016-10-11
+        duration = 'from 2016-08-01 to 2016-08-07'
+        form_generator = FormGenerator(house, duration)
+        form_generator.run()
+    # reset flags phase
+    for house in house_group.get_iter():
+        fs = UseFlagSwitcher(house)
+        fs.reset()
+    # TODO: リセットが行われたか確認する必要がある
+    ###+++ Non Switching Case End +++###
 
-    # instanciate ClusteringWayFormGenerator
-    # cw_fg = ClusteringWayFormGenerator(house_group)
-    # run ClusteringWayFormGenerator instance
-    # cw_fg.run()
+    """
+    ###+++ Simple Way Case Start +++###
+    # switch flags phase
+    for house in house_group.get_iter():
+        sw_fs = SimpleWayUseFlagSwitcher(house)
+        sw_fs.run()
+    # generate form phase
+    for house in house_group.get_iter():
+        form_generator = FormGenerator(house)
+        form_generator.run()
+    # reset flags phase
+    for house in house_group.get_iter():
+        fs = UseFlagSwitcher(house)
+        fs.reset()
+    ###+++ Simple Way Case End +++###
 
-    # instanciate ClassificationTreeWayFormGenerator
-    # ctw_fg = ClassificationTreeWayFormGenerator(house_group)
-    # run ClassificationTreeWayFormGenerator instance
-    # ctw_fg.run()
+    ###+++ Classification Tree Way Case Start +++###
+    # switch flags phase
+    for house in house_group.get_iter():
+        sw_fs = SimpleWayUseFlagSwitcher(house)
+        sw_fs.run()
+    # generate form phase
+    for house in house_group.get_iter():
+        form_generator = FormGenerator(house)
+        form_generator.run()
+    # reset flags phase
+    for house in house_group.get_iter():
+        fs = UseFlagSwitcher(house)
+        fs.reset()
+    ###+++ Classification Tree Way Case End +++###
+    """
+
+    ### === FormGeneratorアプリケーション 実行フェーズ End === ###

@@ -31,6 +31,8 @@ class Household:
     """
     def __init__(self, home_id):
         self.id = home_id
+        # Instanciate ModulesUseFlags class
+        self.module_use_flgas = RecommendModulesUseFlags()
 
     def get_smart_meter(self):
         pass
@@ -65,9 +67,11 @@ class HouseholdGroup:
 
 
 class HouseholdIterator:
-    """
+    '''
     Householdモデルを持つイテレータ
-    """
+
+    2016-10-05 時点で不必要で,代わりにHouseholdGroupを利用する
+    '''
     def __init__(self):
         self._households_list = []
         self._i = 0
@@ -98,82 +102,162 @@ class HouseholdIterator:
         return isinstance(h, Household)
 
 
-class FormGenerator:
+class RecommendModulesUseFlags:
     '''
-    Abstract Model
+    Ikeda's Reserach Factor
+    Recommendation modules use flags to each household
+
+    Flags
+    use SettingTemp flag
+    use ReduceUsage flag
+    use ChangeUsage flag
+
+    First, the flags are True.
+    At the preprocess_with_reaction_data method in The FormGenerator's class,
+    each flag gets False
     '''
-    def __init__(self, house_group):
-        """
-        初期化ではHouseholdIteratorインスタンスを受け取る
-        """
-        self.house_group = house_group
+    def __init__(self, use_ST=True, use_RU=True, use_CU=True):
+        self._use_ST = use_ST
+        self._use_RU = use_RU
+        self._use_CU = use_CU
+
+    @property
+    def use_ST(self):
+        return self._use_ST
+
+    @use_ST.setter
+    def use_ST(self, t_or_f):
+        if not isinstance(t_or_f, bool):
+            return
+        self._use_ST = t_or_f
+
+    @property
+    def use_RU(self):
+        return self._use_RU
+
+    @use_RU.setter
+    def use_RU(self, t_or_f):
+        if not isinstance(t_or_f, bool):
+            return
+        self._use_RU = t_or_f
+
+    @property
+    def use_CU(self):
+        return self._use_CU
+
+    @use_CU.setter
+    def use_CU(self, t_or_f):
+        if not isinstance(t_or_f, bool):
+            return
+        self._use_CU = t_or_f
+
+    def reset(self):
+        self.use_ST = True
+        self.use_RU = True
+        self.use_CU = True
+
+
+class UseFlagSwitcher:
+    '''
+    class for Ikeda's Research
+    switcher for Household's ModulesUseFlags
+    '''
+    def __init__(self, house):
+        '''
+        receive Household instance
+        '''
+        if not isinstance(house, Household):
+            raise Exception  # TODO: write valid error
+        self.house = house
 
     def run(self):
+        # To Be Continued 2016-10-10
         """
-        フォームジェネレータを実行するメソッド
-        """
-        # 提案手法では分類木生成・ライバル手法では個別処理にあたる
-        # データ前処理フェーズ
-        self.process_data_for_preprocessing()
-
-        # home_electric_usage_recommendation_modules を利用して
-        # レコメンド内容を生成する処理フェーズ
-        self.process_data_for_output_recommendation_form()
-
-    def process_data_for_preprocessing(self):
-        """
-        事前処理にあたる反応データ処理用のメソッド
+        機能としてModulesUseFlagsのTrueをFalseにするメソッド
+        各Householdが持つReaction Dataをもとにして
+        各Householdが持つModulesUseFlagsのスイッチングをする
 
         * ここが研究要素であり提案手法・ライバル手法で異なる
-            * 提案手法ではここで木構造を生成する
-            * 個別手法では個別家庭毎でどのレポート内容を実行するかの処理を行う
-            * クラスタリング手法ではクラスタリング処理を行う
+            * 提案手法では生成済みの木構造からFlagを上げたり下げたりする
 
         この処理において利用するデータが「反応データ」と呼ぶもので
             * 実行したかどうかの2択データ -> IsDoneDataFormat
             * レポート画面閲覧ログデータ -> WebViewLogDataFormat
             * 実際の電力消費データ -> ACLogDataFormat 'or' SmartMeterDataFormat
+
         2016-10-05の段階ではこの3つで行っていく予定としている
+
+        2016-10-11 written
+        上記のデータを利用してレコメンドモジュールを
+        利用するかしないかのフラグを立てたり立てなかったりする
+        この「どういった基準でフラグを立てるか」が
+        研究要素となる
         """
         pass
 
-    def process_data_for_output_recommendation_form(self):
-        """
-        レコメンドレポート生成用の処理をする部分
-        home_electric_usage_recommendation_modules ライブラリはここで利用する
+    def reset(self):
+        '''
+        Reset the Household's ModulesUseFlags (All flags to True)
+        '''
+        self.house.module_use_flgas.reset()
 
-        この処理において利用するデータが「解析用データ」と呼ぶもので
-            * 実際の電力消費データ -> ACLogDataFormat 'or' SmartMeterDataFormat
-        を利用する
-        """
-        pass
 
-    def generate_html(self):
-        """
-        HTML文を吐き出すメソッド
-        """
+class SimpleWayUseFlagSwitcher(UseFlagSwitcher):
+    '''
+    提案手法に対するライバル手法
+    '''
+    def run(self):
         pass
 
 
-class EachHomeWayFormGemerator(FormGenerator):
-    def process_data_for_preprocessing(self):
-        pass
-
-    def process_data_for_output_recommendation_form(self):
-        pass
-
-
-class ClusteringWayFormGenerator(FormGenerator):
-    def process_data_for_preprocessing(self):
-        pass
-
-    def process_data_for_output_recommendation_form(self):
+class ClassificationTreeWayUseFlagSwitcher(UseFlagSwitcher):
+    '''
+    提案手法(の予定)
+    '''
+    def run(self):
         pass
 
 
-class ClassificationTreeWayFormGenerator(FormGenerator):
-    def process_data_for_preprocessing(self):
-        pass
+class FormGenerator:
+    '''
+    class for generating recommendation form
 
-    def process_data_for_output_recommendation_form(self):
-        pass
+    * レコメンドレポート生成用の処理をする部分
+    * home_electric_usage_recommendation_modules
+    ライブラリはここで利用する
+    * 実際の電力消費データ -> ACLogDataFormat 'or' SmartMeterDataFormat
+    を利用する
+    '''
+    def __init__(self, house, duration):
+        '''
+        初期化でHouseholdインスタンスを受け取る
+        '''
+        self.house = house
+        self.duration = duration
+
+    def run(self):
+        '''
+        run the FormGenerator
+
+        * Householdインスタンスが持つModulesUseFlagsの
+        フラグのTrue or Falseで対象のモジュールを実行するか判断する
+        '''
+        # Get ACLogDataRows
+        ac_log = self.house.get_ac_log()
+        ac_log_rows_list = list(
+            ac_log.get_rows_iter(duration=self.duration))
+
+        # Check RecommendModulesUseFlags.use_ST and run the module
+        if self.house.module_use_flgas.use_ST:
+            st = SettingTemp(ac_log_rows_list)
+            st.calculate_running_time()
+
+        # Check RecommendModulesUseFlags.use_RU and run the module
+        if self.house.module_use_flgas.use_RU:
+            ru = ReduceUsage(ac_log_rows_list)
+            ru.calculate_running_time()
+
+        # Check RecommendModulesUseFlags.use_CU and run the module
+        if self.house.module_use_flgas.use_CU:
+            cu = ChangeUsage(ac_log_rows_list)
+            cu.calculate_running_time()
