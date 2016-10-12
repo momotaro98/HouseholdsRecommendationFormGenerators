@@ -228,11 +228,12 @@ class FormGenerator:
     * 実際の電力消費データ -> ACLogDataFormat 'or' SmartMeterDataFormat
     を利用する
     '''
-    def __init__(self, house):
+    def __init__(self, house, duration):
         '''
         初期化でHouseholdインスタンスを受け取る
         '''
         self.house = house
+        self.duration = duration
 
     def run(self):
         '''
@@ -241,10 +242,22 @@ class FormGenerator:
         * Householdインスタンスが持つModulesUseFlagsの
         フラグのTrue or Falseで対象のモジュールを実行するか判断する
         '''
-        self.generate_html()
+        # Get ACLogDataRows
+        ac_log = self.house.get_ac_log()
+        ac_log_rows_list = list(
+            ac_log.get_rows_iter(duration=self.duration))
 
-    def generate_html(self):
-        """
-        HTML文を吐き出すメソッド
-        """
-        pass
+        # Check RecommendModulesUseFlags.use_ST and run the module
+        if self.house.module_use_flgas.use_ST:
+            st = SettingTemp(ac_log_rows_list)
+            st.calculate_running_time()
+
+        # Check RecommendModulesUseFlags.use_RU and run the module
+        if self.house.module_use_flgas.use_RU:
+            ru = ReduceUsage(ac_log_rows_list)
+            ru.calculate_running_time()
+
+        # Check RecommendModulesUseFlags.use_CU and run the module
+        if self.house.module_use_flgas.use_CU:
+            cu = ChangeUsage(ac_log_rows_list)
+            cu.calculate_running_time()

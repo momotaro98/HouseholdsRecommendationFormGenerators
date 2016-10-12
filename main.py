@@ -63,7 +63,9 @@ if __name__ == "__main__":
     ######## Nothing To Do ########
     # generate form phase
     for house in house_group.get_iter():
-        form_generator = FormGenerator(house)
+        # TO BE CONTINUED 2016-10-11
+        duration = 'from 2016-08-01 to 2016-08-07'
+        form_generator = FormGenerator(house, duration)
         form_generator.run()
     # reset flags phase
     for house in house_group.get_iter():
