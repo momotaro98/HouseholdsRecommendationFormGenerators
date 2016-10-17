@@ -65,6 +65,7 @@ if __name__ == "__main__":
     for house in house_group.get_iter():
         duration = 'from 2016-08-01 to 2016-08-07'
         form_generator = FormGenerator(house, duration)
+        print("home_id", house.id)
         form_generator.run()
     # reset flags phase
     for house in house_group.get_iter():
@@ -72,6 +73,7 @@ if __name__ == "__main__":
         fs.reset()
     ###+++ Non Switching Case End +++###
 
+    """
     ###+++ Classification Tree Way Case Start +++###
     # switch flags phase
     for house in house_group.get_iter():
@@ -79,12 +81,15 @@ if __name__ == "__main__":
         sw_fs.run()
     # generate form phase
     for house in house_group.get_iter():
-        form_generator = FormGenerator(house)
+        duration = 'from 2016-08-01 to 2016-08-07'
+        form_generator = FormGenerator(house, duration)
+        print("home_id", house.id)
         form_generator.run()
     # reset flags phase
     for house in house_group.get_iter():
         fs = UseFlagSwitcher(house)
         fs.reset()
     ###+++ Classification Tree Way Case End +++###
+    """
 
     ###=== FormGeneratorアプリケーション 実行フェーズ End ===###
