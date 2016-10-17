@@ -209,3 +209,13 @@ class MetaDataFormat(DataFormat):
     家族構成データ・住まい地域などのデータ形式
     """
     format_type = 'MetaDataFormat'
+
+    def __init__(self, family_num, house_type_num, region_num):
+        '''
+        family_num: 家族情報の番号 1人暮らし, 2人暮らし, etc...
+        house_type_num: 家のタイプ マンション, 一軒家, etc...
+        region_num: 地域情報の番号 東京 神奈川 etc...
+        '''
+        self.family_num = family_num
+        self.house_type_num = house_type_num
+        self.region_num = region_num

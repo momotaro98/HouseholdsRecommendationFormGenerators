@@ -58,46 +58,32 @@ if __name__ == "__main__":
 
     ###+++ Non Switching Case Start +++###
     # switch flags phase
-    ######## Nothing To Do ########
-    ######## Nothing To Do ########
-    ######## Nothing To Do ########
+    for house in house_group.get_iter():
+        sw_fs = UseFlagSwitcher(house)
+        sw_fs.run()  # Do Nothing
     # generate form phase
     for house in house_group.get_iter():
-        # TO BE CONTINUED 2016-10-11
         duration = 'from 2016-08-01 to 2016-08-07'
         form_generator = FormGenerator(house, duration)
+        print("home_id", house.id)
         form_generator.run()
     # reset flags phase
     for house in house_group.get_iter():
         fs = UseFlagSwitcher(house)
         fs.reset()
-    # TODO: リセットが行われたか確認する必要がある
     ###+++ Non Switching Case End +++###
 
     """
-    ###+++ Simple Way Case Start +++###
-    # switch flags phase
-    for house in house_group.get_iter():
-        sw_fs = SimpleWayUseFlagSwitcher(house)
-        sw_fs.run()
-    # generate form phase
-    for house in house_group.get_iter():
-        form_generator = FormGenerator(house)
-        form_generator.run()
-    # reset flags phase
-    for house in house_group.get_iter():
-        fs = UseFlagSwitcher(house)
-        fs.reset()
-    ###+++ Simple Way Case End +++###
-
     ###+++ Classification Tree Way Case Start +++###
     # switch flags phase
     for house in house_group.get_iter():
-        sw_fs = SimpleWayUseFlagSwitcher(house)
+        sw_fs = ClassificationTreeWayUseFlagSwitcher(house)
         sw_fs.run()
     # generate form phase
     for house in house_group.get_iter():
-        form_generator = FormGenerator(house)
+        duration = 'from 2016-08-01 to 2016-08-07'
+        form_generator = FormGenerator(house, duration)
+        print("home_id", house.id)
         form_generator.run()
     # reset flags phase
     for house in house_group.get_iter():
@@ -106,4 +92,4 @@ if __name__ == "__main__":
     ###+++ Classification Tree Way Case End +++###
     """
 
-    ### === FormGeneratorアプリケーション 実行フェーズ End === ###
+    ###=== FormGeneratorアプリケーション 実行フェーズ End ===###

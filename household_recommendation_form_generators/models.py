@@ -171,7 +171,6 @@ class UseFlagSwitcher:
         self.house = house
 
     def run(self):
-        # To Be Continued 2016-10-10
         """
         機能としてModulesUseFlagsのTrueをFalseにするメソッド
         各Householdが持つReaction Dataをもとにして
@@ -180,18 +179,13 @@ class UseFlagSwitcher:
         * ここが研究要素であり提案手法・ライバル手法で異なる
             * 提案手法では生成済みの木構造からFlagを上げたり下げたりする
 
-        この処理において利用するデータが「反応データ」と呼ぶもので
-            * 実行したかどうかの2択データ -> IsDoneDataFormat
+        * この処理において利用するデータが「反応データ」と呼ぶもので
             * レポート画面閲覧ログデータ -> WebViewLogDataFormat
             * 実際の電力消費データ -> ACLogDataFormat 'or' SmartMeterDataFormat
+            * 家庭の家族情報や地域情報などのメタデータ -> MetaDataFormat
 
-        2016-10-05の段階ではこの3つで行っていく予定としている
-
-        2016-10-11 written
-        上記のデータを利用してレコメンドモジュールを
-        利用するかしないかのフラグを立てたり立てなかったりする
-        この「どういった基準でフラグを立てるか」が
-        研究要素となる
+        * 学習の正答の答え合わせとして
+            * 実行したかどうかの2択データ -> IsDoneDataFormat
         """
         pass
 
@@ -200,14 +194,6 @@ class UseFlagSwitcher:
         Reset the Household's ModulesUseFlags (All flags to True)
         '''
         self.house.module_use_flgas.reset()
-
-
-class SimpleWayUseFlagSwitcher(UseFlagSwitcher):
-    '''
-    提案手法に対するライバル手法
-    '''
-    def run(self):
-        pass
 
 
 class ClassificationTreeWayUseFlagSwitcher(UseFlagSwitcher):
