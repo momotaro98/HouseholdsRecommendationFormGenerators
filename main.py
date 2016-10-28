@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     # Instanciate HouseholdGroup
     house_group = HouseholdGroup()  # All ModulesUseFlags are True
-    for home_id in range(1001, 4000):
+    for home_id in range(2001, 3000):
         house = Household(home_id)
         house_group.append(house)
 

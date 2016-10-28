@@ -1,5 +1,8 @@
 from datetime import datetime as dt
 import csv
+import psycopg2
+
+from .config import Config
 
 
 class DataFormat:
@@ -22,10 +25,30 @@ class DataRows:
 
     JavaでいうDAOにあたる?
     """
-    def __init__(self, home_id=None, duration=None):
+    # FormGeneratorアプリケーション用に
+    def __init__(self, home_id, duration):
         self._home_id = home_id
         self._duration = duration
         self._rows_list = []  # 実態 型の中にデータの本体の内部リストを持つ
+        self._queryData_and_appendRows(home_id, duration)
+
+    @property
+    def home_id(self):
+        return self._home_id
+
+    @home_id.setter
+    def home_id(self, home_id):
+        if not 0 < home_id < 10000 or not isinstance(home_id, int):
+            return
+        self._home_id = home_id
+
+    @property
+    def duration(self):
+        return self._duration
+
+    @duration.setter
+    def duration(self, duration):
+        self._duration = duration
 
     def _append(self, row):
         # リストに入れる型がDataFormat型であるかチェック
@@ -37,10 +60,9 @@ class DataRows:
         return isinstance(row, DataFormat)
 
     def get_rows_iter(self):
-        self._query_and_append()
         return iter(self._rows_list)
 
-    def _query_and_append(self):
+    def _queryData_and_appendRows(self, home_id, duration):
         pass
 
 
@@ -105,24 +127,22 @@ class ACLogDataRows(DataRows):
     '''
     DAO like object for ACLogDataFormat class
     '''
-    def __init__(self, home_id=None, duration=None):
+    """
+    FormGeneratorアプリケーション用にhome_idとdurationを持たせる
+    """
+    def __init__(self, home_id, duration):
         super().__init__(home_id, duration)
 
+    # _is_the_type()メソッドはオーバーライドする
     def _is_the_type(self, row):
         return isinstance(row, ACLogDataFormat)
 
-    def get_rows_iter(self, home_id=None, duration=None):
-        if home_id is not None:
-            self._home_id = home_id
-        if duration is not None:
-            self._duration = duration
-        self._query_and_append()
-        return iter(self._rows_list)
-
-    def _query_and_append(self):
+    def _queryData_and_appendRows(self, home_id, duration):
         '''
         Query from any data source (CSV file or DB) and
         append ACLogDataFormat to self._rows_list
+        '''
+        # CSV
         '''
         CSVFILE_PATH = 'test.csv'
         with open(CSVFILE_PATH) as csvfile:
@@ -140,6 +160,60 @@ class ACLogDataRows(DataRows):
                         humidity=row['humidity'],
                         IP_Address=row['IP_Address'],
                         ))
+        '''
+
+        # DB
+        """
+        row[0]: id, Type->int
+        row[1]: home_id, Type->int
+        row[2]: timestamp, Type->datetime.datetime
+        row[3]: on_off, Type->str
+        row[4]: operating, Type->str
+        row[5]: set_temperature, Type->int
+        row[6]: wind, Type->str
+        row[7]: indoor_temperature, Type->float
+        row[8]: indoor_pressure, Type->float
+        row[9]: indoor_humidity, Type->float
+        row[10]: operate_ipaddress, Type->str
+        """
+
+        '''
+            SELECT *
+            FROM ac_logs
+            WHERE home_id=2010
+            ORDER BY timestamp
+        '''
+
+        sql_script = """
+            SELECT *
+            FROM ac_logs
+            WHERE home_id={home_id}
+            ORDER BY timestamp
+        """.format(home_id=home_id)
+        with psycopg2.connect(
+            host=Config.HOST,
+            dbname=Config.DBNAME,
+            user=Config.USER,
+            password=Config.PASSWORD) as conn:
+
+            cur = conn.cursor()
+            cur.execute(sql_script)
+            rows = cur.fetchall()
+
+            for row in rows:
+                self._append(
+                    ACLogDataFormat(
+                        timestamp=row[2],
+                        on_off=row[3],
+                        operating=row[4],
+                        set_temperature=row[5],
+                        wind=row[6],
+                        temperature=row[7],
+                        pressure=row[8],
+                        humidity=row[9],
+                        IP_Address=row[10],
+                    )
+                )
 
 
 class WebViewLogDataFormat(LogDataFormat):

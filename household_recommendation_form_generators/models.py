@@ -37,8 +37,8 @@ class Household:
     def get_smart_meter(self):
         pass
 
-    def get_ac_log(self):
-        return ACLogDataRows(self.id)
+    def get_ac_log(self, duration):
+        return ACLogDataRows(home_id=self.id, duration=duration)
 
     def get_web_view_log(self):
         pass
@@ -228,15 +228,23 @@ class FormGenerator:
         * Householdインスタンスが持つModulesUseFlagsの
         フラグのTrue or Falseで対象のモジュールを実行するか判断する
         '''
-        # Get ACLogDataRows
-        ac_log = self.house.get_ac_log()
-        ac_log_rows_list = list(
-            ac_log.get_rows_iter(duration=self.duration))
+        # Get ACLogDataRows Instance
+        ac_log = self.house.get_ac_log(duration=None)
+        # Get ACLogDataRows Rows
+        ac_log_rows_list = list(ac_log.get_rows_iter())
 
+        # DEBUGGING
+        # TODO: Delete this DEBUG
+        for row in ac_log_rows_list:
+            print("house.id", self.house.id, "row.timestamp", row.timestamp, "row.on_off", row.on_off)
+
+        #  設定温度のレコメンドは学習においては省く
+        """
         # Check RecommendModulesUseFlags.use_ST and run the module
         if self.house.module_use_flgas.use_ST:
             st = SettingTemp(ac_log_rows_list)
             st.calculate_running_time()
+        """
 
         # Check RecommendModulesUseFlags.use_RU and run the module
         if self.house.module_use_flgas.use_RU:
