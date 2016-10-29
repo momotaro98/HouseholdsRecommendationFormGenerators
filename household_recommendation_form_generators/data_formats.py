@@ -26,11 +26,14 @@ class DataRows:
     JavaでいうDAOにあたる?
     """
     # FormGeneratorアプリケーション用に
-    def __init__(self, home_id, duration):
-        self._home_id = home_id
-        self._duration = duration
+    def __init__(self, home_id, start_time, end_time):
+        self.home_id = home_id
+        self.start_time = start_time
+        self.end_time = end_time
+        if not self._check_the_relation_start_and_end():
+            raise Exception  # TODO: Implement Error
         self._rows_list = []  # 実態 型の中にデータの本体の内部リストを持つ
-        self._queryData_and_appendRows(home_id, duration)
+        self._queryData_and_appendRows()
 
     @property
     def home_id(self):
@@ -38,22 +41,44 @@ class DataRows:
 
     @home_id.setter
     def home_id(self, home_id):
-        if not 0 < home_id < 10000 or not isinstance(home_id, int):
+        if isinstance(home_id, int) and 0 < home_id < 10000:
+            self._home_id = home_id
             return
-        self._home_id = home_id
+        raise Exception
 
     @property
-    def duration(self):
-        return self._duration
+    def start_time(self):
+        return self._start_time
 
-    @duration.setter
-    def duration(self, duration):
-        self._duration = duration
+    @start_time.setter
+    def start_time(self, start_time):
+        if isinstance(start_time, dt) or start_time is None:
+            self._start_time = start_time
+            return
+        raise TypeError
+
+    @property
+    def end_time(self):
+        return self._end_time
+
+    @end_time.setter
+    def end_time(self, end_time):
+        if isinstance(end_time, dt) or end_time is None:
+            self._end_time = end_time
+            return
+        raise TypeError
+
+    def _check_the_relation_start_and_end(self):
+        if self.start_time is None or self.end_time is None:
+            return True
+        if (self.end_time - self.start_time).total_seconds() > 0.0:
+            return True
+        return False
 
     def _append(self, row):
         # リストに入れる型がDataFormat型であるかチェック
         if not self._is_the_type(row):
-            raise Exception  # TODO: ちゃんとしたエラーを出すようにする
+            raise TypeError  # TODO: ちゃんとしたエラーを出すようにする
         self._rows_list.append(row)
 
     def _is_the_type(self, row):
@@ -62,7 +87,7 @@ class DataRows:
     def get_rows_iter(self):
         return iter(self._rows_list)
 
-    def _queryData_and_appendRows(self, home_id, duration):
+    def _queryData_and_appendRows(self):
         pass
 
 
@@ -128,41 +153,20 @@ class ACLogDataRows(DataRows):
     DAO like object for ACLogDataFormat class
     '''
     """
-    FormGeneratorアプリケーション用にhome_idとdurationを持たせる
+    FormGeneratorアプリケーション用にhome_idとtimeframeを持たせる
     """
-    def __init__(self, home_id, duration):
-        super().__init__(home_id, duration)
+    def __init__(self, home_id, start_time=None, end_time=None):
+        super().__init__(home_id, start_time, end_time)
 
     # _is_the_type()メソッドはオーバーライドする
     def _is_the_type(self, row):
         return isinstance(row, ACLogDataFormat)
 
-    def _queryData_and_appendRows(self, home_id, duration):
+    def _queryData_and_appendRows(self):
         '''
-        Query from any data source (CSV file or DB) and
+        query from DB
         append ACLogDataFormat to self._rows_list
         '''
-        # CSV
-        '''
-        CSVFILE_PATH = 'test.csv'
-        with open(CSVFILE_PATH) as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                self._append(
-                    ACLogDataFormat(
-                        timestamp=row['timestamp'],
-                        on_off=row['on_off'],
-                        operating=row['operating'],
-                        set_temperature=row['set_temperature'],
-                        wind=row['wind'],
-                        temperature=row['temperature'],
-                        pressure=row['pressure'],
-                        humidity=row['humidity'],
-                        IP_Address=row['IP_Address'],
-                        ))
-        '''
-
-        # DB
         """
         row[0]: id, Type->int
         row[1]: home_id, Type->int
@@ -177,19 +181,8 @@ class ACLogDataRows(DataRows):
         row[10]: operate_ipaddress, Type->str
         """
 
-        '''
-            SELECT *
-            FROM ac_logs
-            WHERE home_id=2010
-            ORDER BY timestamp
-        '''
+        sql_script = self._generate_sql_script()
 
-        sql_script = """
-            SELECT *
-            FROM ac_logs
-            WHERE home_id={home_id}
-            ORDER BY timestamp
-        """.format(home_id=home_id)
         with psycopg2.connect(
             host=Config.HOST,
             dbname=Config.DBNAME,
@@ -214,6 +207,56 @@ class ACLogDataRows(DataRows):
                         IP_Address=row[10],
                     )
                 )
+
+    def _generate_sql_script(self):
+        if self.start_time and self.end_time:
+            sql_script = """
+                SELECT *
+                FROM ac_logs
+                WHERE home_id={home_id}
+                AND timestamp>='{start_time}'
+                AND timestamp<='{end_time}'
+                ORDER BY timestamp
+            """.format(
+                home_id=self.home_id,
+                start_time=self.start_time,
+                end_time=self.end_time
+            )
+            return sql_script
+        elif self.start_time:
+            sql_script = """
+                SELECT *
+                FROM ac_logs
+                WHERE home_id={home_id}
+                AND timestamp>='{start_time}'
+                ORDER BY timestamp
+            """.format(
+                home_id=self.home_id,
+                start_time=self.start_time
+            )
+            return sql_script
+        elif self.end_time:
+            sql_script = """
+                SELECT *
+                FROM ac_logs
+                WHERE home_id={home_id}
+                AND timestamp<='{end_time}'
+                ORDER BY timestamp
+            """.format(
+                home_id=self.home_id,
+                end_time=self.end_time
+            )
+            return sql_script
+        else:
+            sql_script = """
+                SELECT *
+                FROM ac_logs
+                WHERE home_id={home_id}
+                ORDER BY timestamp
+            """.format(
+                home_id=self.home_id
+            )
+            return sql_script
 
 
 class WebViewLogDataFormat(LogDataFormat):
