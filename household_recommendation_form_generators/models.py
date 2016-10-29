@@ -273,7 +273,11 @@ class FormGenerator:
         # For Debugging
         # TODO: Delete this DEBUG
         for row in ac_log_rows_list:
-            print("house.id", self.house.id, "row.timestamp", row.timestamp, "row.on_off", row.on_off)
+            print(
+                "house.id", self.house.id,
+                "row.timestamp", row.timestamp,
+                "row.on_off", row.on_off
+            )
 
         # 2016-10-28 written: 設定温度のレコメンドは学習においては省く
         """

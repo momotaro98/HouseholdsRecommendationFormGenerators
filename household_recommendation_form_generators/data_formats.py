@@ -41,7 +41,7 @@ class DataRows:
 
     @home_id.setter
     def home_id(self, home_id):
-        if isinstance(home_id, int) and 0 < home_id < 10000:
+        if isinstance(home_id, int) and 0 < home_id:
             self._home_id = home_id
             return
         raise Exception
@@ -187,7 +187,8 @@ class ACLogDataRows(DataRows):
             host=Config.HOST,
             dbname=Config.DBNAME,
             user=Config.USER,
-            password=Config.PASSWORD) as conn:
+            password=Config.PASSWORD
+                ) as conn:
 
             cur = conn.cursor()
             cur.execute(sql_script)
