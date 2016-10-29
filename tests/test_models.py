@@ -1,4 +1,5 @@
 from unittest import TestCase
+from datetime import datetime as dt
 
 from household_recommendation_form_generators \
     import (Household, HouseholdGroup, HouseholdIterator,
@@ -137,6 +138,7 @@ class FormGeneratorTestCase(TestCase):
 
     def test_basic_function(self):
         for house in self.house_group.get_iter():
-            duration = 'from 2016-08-01 to 2016-08-07'
-            form_generator = FormGenerator(house, duration)
+            start_time = dt(2016, 4, 1)
+            end_time = dt(2016, 4, 15)
+            form_generator = FormGenerator(house, start_time=start_time, )
             form_generator.run()

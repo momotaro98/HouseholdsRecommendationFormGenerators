@@ -1,4 +1,5 @@
 # condig: utf-8
+from datetime import datetime as dt
 
 # レコメンドレポートに載せる内容モジュールをインポート
 from home_electric_usage_recommendation_modules \
@@ -37,8 +38,10 @@ class Household:
     def get_smart_meter(self):
         pass
 
-    def get_ac_log(self):
-        return ACLogDataRows(self.id)
+    def get_ac_log(self, start_time=None, end_time=None):
+        return ACLogDataRows(
+            home_id=self.id, start_time=start_time, end_time=end_time
+        )
 
     def get_web_view_log(self):
         pass
@@ -214,12 +217,44 @@ class FormGenerator:
     * 実際の電力消費データ -> ACLogDataFormat 'or' SmartMeterDataFormat
     を利用する
     '''
-    def __init__(self, house, duration):
+    def __init__(self, house, start_time=None, end_time=None):
         '''
         初期化でHouseholdインスタンスを受け取る
         '''
         self.house = house
-        self.duration = duration
+        self.start_time = start_time
+        self.end_time = end_time
+        if not self._check_the_relation_start_and_end():
+            raise Exception
+
+    @property
+    def start_time(self):
+        return self._start_time
+
+    @start_time.setter
+    def start_time(self, start_time):
+        if isinstance(start_time, dt) or start_time is None:
+            self._start_time = start_time
+            return
+        raise TypeError
+
+    @property
+    def end_time(self):
+        return self._end_time
+
+    @end_time.setter
+    def end_time(self, end_time):
+        if isinstance(end_time, dt) or end_time is None:
+            self._end_time = end_time
+            return
+        raise TypeError
+
+    def _check_the_relation_start_and_end(self):
+        if self.start_time is None or self.end_time is None:
+            return True
+        if (self.end_time - self.start_time).total_seconds() > 0.0:
+            return True
+        return False
 
     def run(self):
         '''
@@ -228,15 +263,29 @@ class FormGenerator:
         * Householdインスタンスが持つModulesUseFlagsの
         フラグのTrue or Falseで対象のモジュールを実行するか判断する
         '''
-        # Get ACLogDataRows
-        ac_log = self.house.get_ac_log()
-        ac_log_rows_list = list(
-            ac_log.get_rows_iter(duration=self.duration))
+        # Get ACLogDataRows Instance
+        ac_log = self.house.get_ac_log(
+            start_time=self.start_time, end_time=self.end_time
+        )
+        # Get ACLogDataRows Rows
+        ac_log_rows_list = list(ac_log.get_rows_iter())
 
+        # For Debugging
+        # TODO: Delete this DEBUG
+        for row in ac_log_rows_list:
+            print(
+                "house.id", self.house.id,
+                "row.timestamp", row.timestamp,
+                "row.on_off", row.on_off
+            )
+
+        # 2016-10-28 written: 設定温度のレコメンドは学習においては省く
+        """
         # Check RecommendModulesUseFlags.use_ST and run the module
         if self.house.module_use_flgas.use_ST:
             st = SettingTemp(ac_log_rows_list)
             st.calculate_running_time()
+        """
 
         # Check RecommendModulesUseFlags.use_RU and run the module
         if self.house.module_use_flgas.use_RU:

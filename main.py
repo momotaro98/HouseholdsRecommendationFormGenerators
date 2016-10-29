@@ -34,25 +34,11 @@ if __name__ == "__main__":
 
     # Instanciate HouseholdGroup
     house_group = HouseholdGroup()  # All ModulesUseFlags are True
-    for home_id in range(1001, 4000):
+    for home_id in range(2008, 2009):
         house = Household(home_id)
         house_group.append(house)
 
     ### *** 家庭グループ準備処理 End *** ###
-
-    """
-    # アプリケーション側 実行例
-    for house in house_group.get_iter():
-        # Get the house's ACLogDataRows instance
-        # DataRowsはHouseholdインスタンスから取得する
-        the_house_ac_log = house.get_ac_log()
-        duration = '2016-08-01'
-        print("house.id: ", house.id)
-        for row in the_house_ac_log.get_rows_iter(duration=duration):
-            print(row.timestamp, row.on_off)
-        # アプリケーション側はそのhouseインスタンスの家庭の
-        # 指定の期間のデータが欲しい(durationのこと)
-    """
 
     ###=== FormGeneratorアプリケーション 実行フェーズ Start ===###
 
@@ -63,8 +49,11 @@ if __name__ == "__main__":
         sw_fs.run()  # Do Nothing
     # generate form phase
     for house in house_group.get_iter():
-        duration = 'from 2016-08-01 to 2016-08-07'
-        form_generator = FormGenerator(house, duration)
+        start_time = datetime.datetime(2015, 8, 1)
+        end_time = datetime.datetime(2015, 8, 7)
+        form_generator = FormGenerator(
+            house, start_time=start_time, end_time=end_time
+        )
         print("home_id", house.id)
         form_generator.run()
     # reset flags phase
@@ -81,8 +70,8 @@ if __name__ == "__main__":
         sw_fs.run()
     # generate form phase
     for house in house_group.get_iter():
-        duration = 'from 2016-08-01 to 2016-08-07'
-        form_generator = FormGenerator(house, duration)
+        timeframe = 'from 2016-08-01 to 2016-08-07'
+        form_generator = FormGenerator(house, timeframe)
         print("home_id", house.id)
         form_generator.run()
     # reset flags phase
