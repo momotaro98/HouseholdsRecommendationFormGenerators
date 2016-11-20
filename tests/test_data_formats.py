@@ -2,7 +2,7 @@ from unittest import TestCase
 from datetime import datetime as dt
 
 from household_recommendation_form_generators \
-    import (DataRows, DataFormat)
+    import (DataRows, DataFormat, MetaDataRow)
 
 
 class DataRowsTestCase(TestCase):
@@ -23,3 +23,12 @@ class DataRowsTestCase(TestCase):
         for row in dr.get_rows_iter():
             count += 1
         self.assertEqual(count, num)
+
+
+class MetaDotaRowTestCase(TestCase):
+    def test_basis_function(self):
+        # My Caution. This test needs DB's data
+        row = MetaDataRow(home_id=2008).get_row()
+        self.assertEqual(row.family_num, 3)
+        self.assertEqual(row.kind_type, 2)
+        self.assertEqual(row.area_type, 3)
