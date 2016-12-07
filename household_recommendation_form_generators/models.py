@@ -301,7 +301,6 @@ class FormGenerator:
             ru = ReduceUsage(ac_log_rows_list)
             ru.calculate_running_time()
 
-
         # 使用時間帯変更レコメンド
         # Check RecommendModulesUseFlags.use_CU and run the module
         if self.house.module_use_flgas.use_CU:
