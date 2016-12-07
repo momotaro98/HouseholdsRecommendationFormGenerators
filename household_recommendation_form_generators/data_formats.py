@@ -328,12 +328,50 @@ class MetaDataFormat(DataFormat):
     """
     format_type = 'MetaDataFormat'
 
-    def __init__(self, family_num, house_type_num, region_num):
+    def __init__(self, family_num, kind_type, area_type):
         '''
         family_num: 家族情報の番号 1人暮らし, 2人暮らし, etc...
         house_type_num: 家のタイプ マンション, 一軒家, etc...
         region_num: 地域情報の番号 東京 神奈川 etc...
         '''
         self.family_num = family_num
-        self.house_type_num = house_type_num
-        self.region_num = region_num
+        self.kind_type = kind_type
+        self.area_type = area_type
+
+
+class MetaDataRow:
+    def __init__(self, home_id):
+        self.home_id = home_id
+        self._queryData()
+
+    def _queryData(self):
+        with psycopg2.connect(
+            host=Config.HOST,
+            dbname=Config.DBNAME,
+            user=Config.USER,
+            password=Config.PASSWORD
+                ) as conn:
+
+            cur = conn.cursor()
+            sql_script = self._generate_sql_script()
+            cur.execute(sql_script)
+            row = cur.fetchone()
+
+            self._row = MetaDataFormat(
+                family_num=row[2],
+                kind_type=row[3],
+                area_type=row[4],
+            )
+
+    def _generate_sql_script(self):
+        sql_script = """
+            SELECT *
+            FROM home_meta
+            WHERE home_id={home_id}
+        """.format(
+             home_id=self.home_id
+        )
+        return sql_script
+
+    def get_row(self):
+        return self._row

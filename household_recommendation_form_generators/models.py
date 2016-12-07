@@ -1,4 +1,5 @@
 # condig: utf-8
+import random
 from datetime import datetime as dt
 
 # レコメンドレポートに載せる内容モジュールをインポート
@@ -29,6 +30,7 @@ class Household:
     2. ACLogDataFormat
     3. WebViewLogDataFormat
     4. IsDoneDataFormat
+    5. HomeMeta <= New! 2016-11-17
     """
     def __init__(self, home_id):
         self.id = home_id
@@ -48,6 +50,10 @@ class Household:
 
     def get_is_done(self):
         pass
+
+    def get_home_meta(self):
+        # return MetaDataRow(home_id=self.id)
+        return MetaDataRow(home_id=self.id).get_row()
 
 
 class HouseholdGroup:
@@ -170,7 +176,7 @@ class UseFlagSwitcher:
         receive Household instance
         '''
         if not isinstance(house, Household):
-            raise Exception  # TODO: write valid error
+            raise TypeError  # TODO: write valid error
         self.house = house
 
     def run(self):
@@ -190,21 +196,22 @@ class UseFlagSwitcher:
         * 学習の正答の答え合わせとして
             * 実行したかどうかの2択データ -> IsDoneDataFormat
         """
-        pass
+
+        '''
+        どうしようもないのでランダムでフラグ立て
+        '''
+        if random.random() < 0.3:
+            self.house.module_use_flgas.use_ST = False
+        if random.random() < 0.3:
+            self.house.module_use_flgas.use_RU = False
+        if random.random() < 0.3:
+            self.house.module_use_flgas.use_CU = False
 
     def reset(self):
         '''
         Reset the Household's ModulesUseFlags (All flags to True)
         '''
         self.house.module_use_flgas.reset()
-
-
-class ClassificationTreeWayUseFlagSwitcher(UseFlagSwitcher):
-    '''
-    提案手法(の予定)
-    '''
-    def run(self):
-        pass
 
 
 class FormGenerator:
@@ -225,7 +232,7 @@ class FormGenerator:
         self.start_time = start_time
         self.end_time = end_time
         if not self._check_the_relation_start_and_end():
-            raise Exception
+            raise Exception('Start and End Time Error')
 
     @property
     def start_time(self):
@@ -259,40 +266,50 @@ class FormGenerator:
     def run(self):
         '''
         run the FormGenerator
-
-        * Householdインスタンスが持つModulesUseFlagsの
-        フラグのTrue or Falseで対象のモジュールを実行するか判断する
         '''
-        # Get ACLogDataRows Instance
-        ac_log = self.house.get_ac_log(
-            start_time=self.start_time, end_time=self.end_time
-        )
-        # Get ACLogDataRows Rows
-        ac_log_rows_list = list(ac_log.get_rows_iter())
 
-        # For Debugging
-        # TODO: Delete this DEBUG
-        for row in ac_log_rows_list:
-            print(
-                "house.id", self.house.id,
-                "row.timestamp", row.timestamp,
-                "row.on_off", row.on_off
-            )
+        # * Householdインスタンスが持つModulesUseFlagsの
+        # フラグのTrue or Falseで対象のモジュールを実行するか判断する
 
+        '''
         # 2016-10-28 written: 設定温度のレコメンドは学習においては省く
-        """
+        # 設定温度レコメンド
         # Check RecommendModulesUseFlags.use_ST and run the module
         if self.house.module_use_flgas.use_ST:
+            # Get ACLogDataRows Instance
+            ac_log = self.house.get_ac_log(
+                start_time=self.start_time, end_time=self.end_time
+            )
+            # Get ACLogDataRows Rows
+            ac_log_rows_list = list(ac_log.get_rows_iter())
+
             st = SettingTemp(ac_log_rows_list)
             st.calculate_running_time()
-        """
+        '''
 
+        # 電力削減レコメンド
         # Check RecommendModulesUseFlags.use_RU and run the module
         if self.house.module_use_flgas.use_RU:
+            # Get ACLogDataRows Instance
+            ac_log = self.house.get_ac_log(
+                start_time=self.start_time, end_time=self.end_time
+            )
+            # Get ACLogDataRows Rows
+            ac_log_rows_list = list(ac_log.get_rows_iter())
+
+            # Run ReduceUsage Module
             ru = ReduceUsage(ac_log_rows_list)
             ru.calculate_running_time()
 
+        # 使用時間帯変更レコメンド
         # Check RecommendModulesUseFlags.use_CU and run the module
         if self.house.module_use_flgas.use_CU:
+            # Get ACLogDataRows Instance
+            ac_log = self.house.get_ac_log(
+                start_time=self.start_time, end_time=self.end_time
+            )
+            # Get ACLogDataRows Rows
+            ac_log_rows_list = list(ac_log.get_rows_iter())
+
             cu = ChangeUsage(ac_log_rows_list)
             cu.calculate_running_time()
