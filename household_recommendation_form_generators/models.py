@@ -273,3 +273,43 @@ class DecisionTreeSwitcherForHomeCluster:
 
     def make_shared_DTtable(self):
         pass
+
+    def ret_start_train_dt(self):
+        '''
+        ムサコHEMSデータだけで学習を行うので(※学習期間は家庭間で統一しなくてはいけないので)
+        学習期間は2015年の冬にする(※1日ごとにレコメンドを送るikexp実験は冬だけだったので)
+        '''
+        start_train_dt = dt(2015, 11, 1, 0, 0, 0)  # 冬なのでとりあえず11月1日を学習スタート
+        return start_train_dt
+
+    def ret_end_train_dt(self):
+        '''
+        ムサコHEMSデータだけで学習を行うので(※学習期間は家庭間で統一しなくてはいけないので)
+        学習期間は2015年の冬にする(※1日ごとにレコメンドを送るikexp実験は冬だけだったので)
+        '''
+        end_train_dt = dt(2016, 1, 31, 23, 59, 59)  # 冬なのでとりあえず11月1日を学習スタート
+        return end_train_dt
+
+    def ret_target_season(self):
+        # target_season = 'spr'
+        # target_season = 'sum'
+        # target_season = 'fal'
+        target_season = 'win'
+        return target_season
+
+    def ret_target_hour(self):
+        target_hour = 10
+        return target_hour
+
+    def ret_ac_logs_list(self):
+        '''
+        このメソッドでself.house_group内の全家庭分のACログの行をまとめたものを生成
+        '''
+        ret_ac_logs_list = []
+        for house in self.house_group.get_iter():
+            the_house_ac_log = house.get_ac_log(
+                start_time=self.ret_start_train_dt(),
+                end_time=self.ret_end_train_dt(),
+            )
+            ret_ac_logs_list += list(the_house_ac_log.get_rows_iter())
+        return ret_ac_logs_list

@@ -35,32 +35,60 @@ if __name__ == "__main__":
     # *** 家庭グループ準備処理 Start ***
 
     # Instanciate HouseholdGroup
-    musako_homes_source_id = [
-	4, 8, 9, 10, 11, 12, 14, 17, 18, 19, 23, 25, 27, 30, 47, 48,
-        53, 59, 61, 65, 70, 71, 82, 87, 88, 93, 96, 99,
-	101, 102, 104, 105, 106, 112, 113, 114, 115, 116, 117, 118, 119, 120,
-        121, 122, 123, 124, 126, 127, 128, 129, 130, 131,137, 150, 151, 152,
-    ]
-    musako_homes_id = [home_num + 2000 for home_num in musako_homes_source_id]
-    momotaro_homes_id = [1, 8, 9, 10, 11]
-    homes_id = momotaro_homes_id + musako_homes_id
+    musako_homes_id = [
+        2004, 2010, 2011, 2012, 2014, 2017, 2018, 2019, 2020, 2021,
+        2023, 2025, 2027, 2030, 2047, 2048, 2053, 2054, 2059, 2070,
+        2071, 2073, 2079, 2082, 2087, 2088, 2096, 2099, 2104, 2105,
+        2106, 2112, 2113, 2114, 2115, 2116, 2117, 2118, 2121, 2122,
+        2123, 2124, 2126, 2129, 2130, 2131, 2137, 2150, 2151, 2152,
+    ]  # 50件
+    # momotaro_homes_id = [1, 8, 9, 10, 11]
+    # homes_id = momotaro_homes_id + musako_homes_id
+    homes_id = musako_homes_id
 
     # ひとまずランダムにクラスタ作成
+    # TODO: metaデータを用いてk-meansクラスタリング処理
     random.shuffle(homes_id)  # homes_idに対する破壊的処理
     homes_id_sliced = homes_id[:10]  # とりあえず10家庭のクラスタ
     # house_groupはランダムに家庭10件分
     house_group = HouseholdGroup()  # All ModulesUseFlags are True
+    # for home_id in homes_id_sliced:
     for home_id in homes_id:
+    # for home_id in musako_homes_id:
         # 各家庭が自家庭のHouseholdインスタンスを持つ
         house = Household(home_id)
         house_group.append(house)
-
-    # TODO: metaデータを用いてk-meansクラスタリング処理
-
     # *** 家庭グループ準備処理 End ***
 
-    # TODO: house_groupごと受け渡す
+    """
+    exist_homes = []
+    empty_homes = []
+    for house in house_group.get_iter():
+        ac12 = house.get_ac_log(
+            start_time=datetime.datetime(2015, 12, 1),
+            end_time=datetime.datetime(2016, 12, 31)
+        )
+        aclist12 = list(ac12.get_rows_iter())
+        ac01 = house.get_ac_log(
+            start_time=datetime.datetime(2016, 1, 1),
+            end_time=datetime.datetime(2016, 1, 31)
+        )
+        aclist02 = list(ac01.get_rows_iter())
+        if aclist12 and aclist02:
+            exist_homes.append(house.id)
+        else:
+            empty_homes.append(house.id)
+    print('exist_homes', exist_homes)
+    print('empty_homes', empty_homes)
+    """
 
+    '''
+    # test DecisionTreeSwitcherForHomeCluster
+    dts = DecisionTreeSwitcherForHomeCluster(house_group)
+    t_list = dts.ret_ac_logs_list()
+    for row in t_list:
+        print('row.timestamp', row.timestamp)
+    '''
 
     """
     ###=== FormGeneratorアプリケーション 実行フェーズ Start ===###
