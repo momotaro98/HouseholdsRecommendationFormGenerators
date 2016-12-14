@@ -78,7 +78,7 @@ class HouseholdGroup:
 class HouseholdIterator:
     '''
     Householdモデルを持つイテレータ
-
+    *** CAUSION! ***
     2016-10-05 時点で不必要で,代わりにHouseholdGroupを利用する
     '''
     def __init__(self):
@@ -164,54 +164,6 @@ class RecommendModulesUseFlags:
         self.use_ST = True
         self.use_RU = True
         self.use_CU = True
-
-
-class UseFlagSwitcher:
-    '''
-    class for Ikeda's Research
-    switcher for Household's ModulesUseFlags
-    '''
-    def __init__(self, house):
-        '''
-        receive Household instance
-        '''
-        if not isinstance(house, Household):
-            raise TypeError  # TODO: write valid error
-        self.house = house
-
-    def run(self):
-        """
-        機能としてModulesUseFlagsのTrueをFalseにするメソッド
-        各Householdが持つReaction Dataをもとにして
-        各Householdが持つModulesUseFlagsのスイッチングをする
-
-        * ここが研究要素であり提案手法・ライバル手法で異なる
-            * 提案手法では生成済みの木構造からFlagを上げたり下げたりする
-
-        * この処理において利用するデータが「反応データ」と呼ぶもので
-            * レポート画面閲覧ログデータ -> WebViewLogDataFormat
-            * 実際の電力消費データ -> ACLogDataFormat 'or' SmartMeterDataFormat
-            * 家庭の家族情報や地域情報などのメタデータ -> MetaDataFormat
-
-        * 学習の正答の答え合わせとして
-            * 実行したかどうかの2択データ -> IsDoneDataFormat
-        """
-
-        '''
-        どうしようもないのでランダムでフラグ立て
-        '''
-        if random.random() < 0.3:
-            self.house.module_use_flgas.use_ST = False
-        if random.random() < 0.3:
-            self.house.module_use_flgas.use_RU = False
-        if random.random() < 0.3:
-            self.house.module_use_flgas.use_CU = False
-
-    def reset(self):
-        '''
-        Reset the Household's ModulesUseFlags (All flags to True)
-        '''
-        self.house.module_use_flgas.reset()
 
 
 class FormGenerator:
@@ -313,3 +265,11 @@ class FormGenerator:
 
             cu = ChangeUsage(ac_log_rows_list)
             cu.calculate_running_time()
+
+
+class DecisionTreeSwitcherForHomeCluster:
+    def __init__(self, house_group):
+        self.house_group = house_group
+
+    def make_shared_DTtable(self):
+        pass
