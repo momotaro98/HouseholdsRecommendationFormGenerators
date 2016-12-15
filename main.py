@@ -1,12 +1,27 @@
 import csv
-import datetime
+from datetime import datetime
+from datetime import timedelta
 import time
 import random
 
 from household_recommendation_form_generators import *
 
 
+def eval02(house_group):
+    # 家庭クラスタの決定木モデルから得られる2016年冬時期のY予測値
+    s_dt = datetime(2016, 11, 16)
+    while s_dt <= datetime(2016, 12, 12):
+        tu_pred_Y = IsTotalUsage(house_group).ret_pred_Y(s_dt.date())
+        print('tu_pred_Y', tu_pred_Y)
+        # cu_pred_Y = IsChangeUsage(house_group).ret_pred_Y(s_dt.date())
+        # print('cu_pred_Y', cu_pred_Y)
+        s_dt += timedelta(days=1)
+
+    # 実験家庭から得られる2016年冬時期のY実際値
+
+
 def eval01(homes_id_list, number_of_houses):
+    # クラスタごとの計算結果を得る評価
     homes_id_sliced = homes_id_list[:number_of_houses]  # とりあえず10家庭のクラスタ
     # house_groupはランダムに家庭10件分
     house_group = HouseholdGroup()  # All ModulesUseFlags are True
@@ -16,7 +31,6 @@ def eval01(homes_id_list, number_of_houses):
         # 各家庭が自家庭のHouseholdインスタンスを持つ
         house = Household(home_id)
         house_group.append(house)
-    # return house_group
 
     start = time.time()
     cu_pred_Y = IsChangeUsage(house_group).ret_pred_Y()
@@ -26,6 +40,10 @@ def eval01(homes_id_list, number_of_houses):
     elapsed_time = end - start
     print('number_of_houses', number_of_houses)
     print('elapsed_time', elapsed_time)
+
+    # レコメンド品質を検証する評価
+    print('=' * 79)
+    eval02(house_group)
 
 
 if __name__ == "__main__":
@@ -81,15 +99,9 @@ if __name__ == "__main__":
     eval01(homes_id_list, number_of_houses=50)
     # *** 家庭グループ準備処理 End ***
 
-    '''
-    start = time.time()
-    # pred_Y = IsChangeUsage(house_group).ret_pred_Y()
-    pred_Y = IsTotalUsage(house_group).ret_pred_Y()
-    print('pred_Y', pred_Y)
-    end = time.time()
-    elapsed_time = end - start
-    print('elapsed_time', elapsed_time)
-    '''
+
+
+
 
     """
     ###=== FormGeneratorアプリケーション 実行フェーズ Start ===###
@@ -101,8 +113,8 @@ if __name__ == "__main__":
     start = time.time()
     for house in house_group.get_iter():
         # 以下の処理は各家庭のコンピュータが行う
-        start_time = datetime.datetime(2015, 8, 1)
-        end_time = datetime.datetime(2015, 9, 7)
+        start_time = datetime(2015, 8, 1)
+        end_time = datetime(2015, 9, 7)
         form_generator = FormGenerator(
             house, start_time=start_time, end_time=end_time
         )
@@ -123,8 +135,8 @@ if __name__ == "__main__":
     # generate form phase
     start = time.time()
     for house in house_group.get_iter():
-        start_time = datetime.datetime(2015, 8, 1)
-        end_time = datetime.datetime(2015, 9, 7)
+        start_time = datetime(2015, 8, 1)
+        end_time = datetime(2015, 9, 7)
         form_generator = FormGenerator(
             house, start_time=start_time, end_time=end_time
         )

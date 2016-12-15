@@ -272,6 +272,9 @@ class FormGenerator:
 
 
 class DecisionTreeSwitcherForHomeCluster:
+    '''
+    ムサコHEMSデータの家庭達を対象
+    '''
     def __init__(self, house_group):
         self.house_group = house_group
 
@@ -315,7 +318,7 @@ class DecisionTreeSwitcherForHomeCluster:
             ret_ac_logs_list += list(the_house_ac_log.get_rows_iter())
         return ret_ac_logs_list
 
-    def ret_pred_Y(self):
+    def ret_pred_Y(self, target_date):
         '''
         # decision_tree_for_hems_recommendationsのオブジェクトを利用して
         # 学習〜予測値出力までやる
@@ -324,10 +327,9 @@ class DecisionTreeSwitcherForHomeCluster:
 
 
 class IsTotalUsage(DecisionTreeSwitcherForHomeCluster):
-    def ret_pred_Y(self):
+    def ret_pred_Y(self, target_date=None):
         start_train_dt = self.ret_start_train_dt()
-        end_train_dt = self.ret_end_train_dt()
-        ac_logs_list = self.ret_ac_logs_list()
+        end_train_dt = self.ret_end_train_dt() ac_logs_list = self.ret_ac_logs_list()
         target_season = self.ret_target_season()
         target_hour = self.ret_target_hour()
         self.rDT = TotalUsageDT(
@@ -337,12 +339,12 @@ class IsTotalUsage(DecisionTreeSwitcherForHomeCluster):
             target_season=target_season,
             target_hour=target_hour,
         )
-        y_pred = self.rDT.ret_predicted_Y_int()
+        y_pred = self.rDT.ret_predicted_Y_int(target_date)
         return y_pred
 
 
 class IsChangeUsage(DecisionTreeSwitcherForHomeCluster):
-    def ret_pred_Y(self):
+    def ret_pred_Y(self, target_date=None):
         start_train_dt = self.ret_start_train_dt()
         end_train_dt = self.ret_end_train_dt()
         ac_logs_list = self.ret_ac_logs_list()
@@ -355,5 +357,12 @@ class IsChangeUsage(DecisionTreeSwitcherForHomeCluster):
             target_season=target_season,
             target_hour=target_hour,
         )
-        y_pred = self.st_DT.ret_predicted_Y_int()
+        y_pred = self.st_DT.ret_predicted_Y_int(target_date)
         return y_pred
+
+
+class ExperimentHomes:
+    '''
+    momotaroの実験協力家庭を対象
+    '''
+    pass
