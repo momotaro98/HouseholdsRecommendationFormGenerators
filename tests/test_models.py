@@ -3,7 +3,7 @@ from datetime import datetime as dt
 
 from household_recommendation_form_generators \
     import (Household, HouseholdGroup, HouseholdIterator,
-            RecommendModulesUseFlags, ACLogDataRows, UseFlagSwitcher,
+            RecommendModulesUseFlags, ACLogDataRows,
             FormGenerator)
 
 
@@ -108,25 +108,6 @@ class RecommendModulesUseFlagsTestCase(TestCase):
         self.assertTrue(flags.use_ST)
         self.assertTrue(flags.use_RU)
         self.assertTrue(flags.use_CU)
-
-
-class UseFlagSwitcherTestCase(TestCase):
-    def setUp(self):
-        self.house_group = HouseholdGroup()
-        for home_id in range(10021, 10031):
-            house = Household(home_id)
-            self.house_group.append(house)
-
-    def test_reset_method(self):
-        for house in self.house_group.get_iter():
-            house.module_use_flgas.use_ST = False
-        for house in self.house_group.get_iter():
-            self.assertFalse(house.module_use_flgas.use_ST)
-        for house in self.house_group.get_iter():
-            fs = UseFlagSwitcher(house)
-            fs.reset()
-        for house in self.house_group.get_iter():
-            self.assertTrue(house.module_use_flgas.use_ST)
 
 
 class FormGeneratorTestCase(TestCase):
