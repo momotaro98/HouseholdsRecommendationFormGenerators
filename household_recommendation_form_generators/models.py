@@ -329,7 +329,8 @@ class DecisionTreeSwitcherForHomeCluster:
 class IsTotalUsage(DecisionTreeSwitcherForHomeCluster):
     def ret_pred_Y(self, target_date=None):
         start_train_dt = self.ret_start_train_dt()
-        end_train_dt = self.ret_end_train_dt() ac_logs_list = self.ret_ac_logs_list()
+        end_train_dt = self.ret_end_train_dt()
+        ac_logs_list = self.ret_ac_logs_list()
         target_season = self.ret_target_season()
         target_hour = self.ret_target_hour()
         self.rDT = TotalUsageDT(
@@ -350,19 +351,109 @@ class IsChangeUsage(DecisionTreeSwitcherForHomeCluster):
         ac_logs_list = self.ret_ac_logs_list()
         target_season = self.ret_target_season()
         target_hour = self.ret_target_hour()
-        self.st_DT = ChangeUsageDT(
+        self.rDT = ChangeUsageDT(
             start_train_dt=start_train_dt,
             end_train_dt=end_train_dt,
             ac_logs_list=ac_logs_list,
             target_season=target_season,
             target_hour=target_hour,
         )
-        y_pred = self.st_DT.ret_predicted_Y_int(target_date)
+        y_pred = self.rDT.ret_predicted_Y_int(target_date)
         return y_pred
 
 
-class ExperimentHomes:
+class ExperimentHomesYact:
     '''
     momotaroの実験協力家庭を対象
+    # 実験家庭から得られる2016年冬時期のY実際値
+    # を得ることが目的
     '''
-    pass
+    def __init__(self, home_id, start_train_dt, end_train_dt):
+        '''
+        home_idがコンストラクタの引数
+        ExperimentHomesYactは家庭1件分のみを管理
+        '''
+        self.house = Household(home_id)
+        self.start_train_dt = start_train_dt
+        self.end_train_dt = end_train_dt
+
+    def ret_start_train_dt(self):
+        '''
+        ムサコHEMSデータだけで学習を行うので(※学習期間は家庭間で統一しなくてはいけないので)
+        学習期間は2015年の冬にする(※1日ごとにレコメンドを送るikexp実験は冬だけだったので)
+        '''
+        start_train_dt = self.start_train_dt
+        return start_train_dt
+
+    def ret_end_train_dt(self):
+        '''
+        ムサコHEMSデータだけで学習を行うので(※学習期間は家庭間で統一しなくてはいけないので)
+        学習期間は2015年の冬にする(※1日ごとにレコメンドを送るikexp実験は冬だけだったので)
+        '''
+        end_train_dt = self.end_train_dt
+        return end_train_dt
+
+    def ret_target_season(self):
+        # target_season = 'spr'
+        # target_season = 'sum'
+        # target_season = 'fal'
+        target_season = 'win'
+        return target_season
+
+    def ret_target_hour(self):
+        target_hour = 10
+        return target_hour
+
+    def ret_ac_logs_list(self):
+        '''
+        このメソッドでself.house_group内の全家庭分のACログの行をまとめたものを生成
+        '''
+        ret_ac_logs_list = []
+        the_house_ac_log = self.house.get_ac_log(
+            start_time=self.ret_start_train_dt(),
+            end_time=self.ret_end_train_dt(),
+        )
+        ret_ac_logs_list = list(the_house_ac_log.get_rows_iter())
+        return ret_ac_logs_list
+
+    def ret_TU_act_Y_list(self, target_date=None):
+        '''
+        list to return
+        [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]
+        学習日付分の実測Y値
+        '''
+        start_train_dt = self.ret_start_train_dt()
+        end_train_dt = self.ret_end_train_dt()
+        ac_logs_list = self.ret_ac_logs_list()
+        target_season = self.ret_target_season()
+        target_hour = self.ret_target_hour()
+        self.rDT = TotalUsageDT(
+            start_train_dt=start_train_dt,
+            end_train_dt=end_train_dt,
+            ac_logs_list=ac_logs_list,
+            target_season=target_season,
+            target_hour=target_hour,
+        )
+        y_act_list = self.rDT.train_Y_list
+        return y_act_list
+
+    def ret_CU_act_Y_list(self, target_date=None):
+        '''
+        list to return
+        [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]
+        学習日付分の実測Y値
+        '''
+        start_train_dt = self.ret_start_train_dt()
+        end_train_dt = self.ret_end_train_dt()
+        ac_logs_list = self.ret_ac_logs_list()
+        target_season = self.ret_target_season()
+        target_hour = self.ret_target_hour()
+        self.rDT = ChangeUsageDT(
+            start_train_dt=start_train_dt,
+            end_train_dt=end_train_dt,
+            ac_logs_list=ac_logs_list,
+            target_season=target_season,
+            target_hour=target_hour,
+        )
+        y_act_list = self.rDT.train_Y_list
+        return y_act_list

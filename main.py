@@ -7,17 +7,48 @@ import random
 from household_recommendation_form_generators import *
 
 
+def eval03(act_y_list, pred_y_list):
+    '''
+    F値などで評価する必要がある
+    '''
+    if len(act_y_list) != len(pred_y_list):
+        raise Exception('act_y_list and pred_y_list len must be same.')
+    print('act_y_list', act_y_list)
+    print('pre_y_list', pred_y_list)
+
+
 def eval02(house_group):
     # 家庭クラスタの決定木モデルから得られる2016年冬時期のY予測値
-    s_dt = datetime(2016, 11, 16)
-    while s_dt <= datetime(2016, 12, 12):
-        tu_pred_Y = IsTotalUsage(house_group).ret_pred_Y(s_dt.date())
-        print('tu_pred_Y', tu_pred_Y)
-        # cu_pred_Y = IsChangeUsage(house_group).ret_pred_Y(s_dt.date())
+    start_dt = datetime(2016, 12, 1, 0, 0, 0)
+    end_dt = datetime(2016, 12, 14, 23, 59, 59)
+    pred_y_list = []
+    s_dt = start_dt
+    while s_dt <= end_dt:
+        # TotalUsage
+        # tu_pred_Y = IsTotalUsage(house_group).ret_pred_Y(s_dt.date())
+        # pred_y_list.append(tu_pred_Y)
+        # print('tu_pred_Y', tu_pred_Y)
+
+        # ChangeUsage
+        cu_pred_Y = IsChangeUsage(house_group).ret_pred_Y(s_dt.date())
+        pred_y_list.append(cu_pred_Y)
         # print('cu_pred_Y', cu_pred_Y)
+
         s_dt += timedelta(days=1)
 
     # 実験家庭から得られる2016年冬時期のY実際値
+    ehy = ExperimentHomesYact(
+        home_id=9,
+        start_train_dt=start_dt,
+        end_train_dt=end_dt,
+    )
+    # TotalUsage
+    act_y_list = [ay[1] for ay in ehy.ret_TU_act_Y_list()]
+    # ChangeUsage
+    # act_y_list = [ay[1] for ay in ehy.ret_CU_act_Y_list()]
+
+    # TODO: r_dは真偽におけるF値で評価する必要がある
+    eval03(act_y_list, pred_y_list)
 
 
 def eval01(homes_id_list, number_of_houses):
@@ -90,15 +121,15 @@ if __name__ == "__main__":
     # TODO: metaデータを用いてk-meansクラスタリング処理
     random.shuffle(homes_id_list)  # homes_id_listに対する破壊的処理
 
-    eval01(homes_id_list, number_of_houses=1)
-    eval01(homes_id_list, number_of_houses=5)
-    eval01(homes_id_list, number_of_houses=10)
-    eval01(homes_id_list, number_of_houses=20)
-    eval01(homes_id_list, number_of_houses=30)
-    eval01(homes_id_list, number_of_houses=40)
-    eval01(homes_id_list, number_of_houses=50)
     # *** 家庭グループ準備処理 End ***
 
+    # eval01(homes_id_list, number_of_houses=1)
+    # eval01(homes_id_list, number_of_houses=5)
+    eval01(homes_id_list, number_of_houses=10)
+    # eval01(homes_id_list, number_of_houses=20)
+    # eval01(homes_id_list, number_of_houses=30)
+    # eval01(homes_id_list, number_of_houses=40)
+    # eval01(homes_id_list, number_of_houses=50)
 
 
 
