@@ -7,6 +7,10 @@ from home_electric_usage_recommendation_modules \
     import (SettingTemp, ReduceUsage, ChangeUsage)
 from .data_formats import *
 
+from decision_tree_for_hems_recommendations import (
+    SettingTempDT, TotalUsageDT, ChangeUsageDT,
+)
+
 
 class Household:
     """
@@ -271,15 +275,12 @@ class DecisionTreeSwitcherForHomeCluster:
     def __init__(self, house_group):
         self.house_group = house_group
 
-    def make_shared_DTtable(self):
-        pass
-
     def ret_start_train_dt(self):
         '''
         ムサコHEMSデータだけで学習を行うので(※学習期間は家庭間で統一しなくてはいけないので)
         学習期間は2015年の冬にする(※1日ごとにレコメンドを送るikexp実験は冬だけだったので)
         '''
-        start_train_dt = dt(2015, 11, 1, 0, 0, 0)  # 冬なのでとりあえず11月1日を学習スタート
+        start_train_dt = dt(2015, 12, 1, 0, 0, 0)  # 2015年12月1日学習スタート
         return start_train_dt
 
     def ret_end_train_dt(self):
@@ -287,7 +288,7 @@ class DecisionTreeSwitcherForHomeCluster:
         ムサコHEMSデータだけで学習を行うので(※学習期間は家庭間で統一しなくてはいけないので)
         学習期間は2015年の冬にする(※1日ごとにレコメンドを送るikexp実験は冬だけだったので)
         '''
-        end_train_dt = dt(2016, 1, 31, 23, 59, 59)  # 冬なのでとりあえず11月1日を学習スタート
+        end_train_dt = dt(2016, 1, 31, 23, 59, 59)  # 2016年1月31日を学習終わり
         return end_train_dt
 
     def ret_target_season(self):
@@ -313,3 +314,46 @@ class DecisionTreeSwitcherForHomeCluster:
             )
             ret_ac_logs_list += list(the_house_ac_log.get_rows_iter())
         return ret_ac_logs_list
+
+    def ret_pred_Y(self):
+        '''
+        # decision_tree_for_hems_recommendationsのオブジェクトを利用して
+        # 学習〜予測値出力までやる
+        '''
+        pass
+
+
+class IsTotalUsage(DecisionTreeSwitcherForHomeCluster):
+    def ret_pred_Y(self):
+        start_train_dt = self.ret_start_train_dt()
+        end_train_dt = self.ret_end_train_dt()
+        ac_logs_list = self.ret_ac_logs_list()
+        target_season = self.ret_target_season()
+        target_hour = self.ret_target_hour()
+        self.rDT = TotalUsageDT(
+            start_train_dt=start_train_dt,
+            end_train_dt=end_train_dt,
+            ac_logs_list=ac_logs_list,
+            target_season=target_season,
+            target_hour=target_hour,
+        )
+        y_pred = self.rDT.ret_predicted_Y_int()
+        return y_pred
+
+
+class IsChangeUsage(DecisionTreeSwitcherForHomeCluster):
+    def ret_pred_Y(self):
+        start_train_dt = self.ret_start_train_dt()
+        end_train_dt = self.ret_end_train_dt()
+        ac_logs_list = self.ret_ac_logs_list()
+        target_season = self.ret_target_season()
+        target_hour = self.ret_target_hour()
+        self.st_DT = ChangeUsageDT(
+            start_train_dt=start_train_dt,
+            end_train_dt=end_train_dt,
+            ac_logs_list=ac_logs_list,
+            target_season=target_season,
+            target_hour=target_hour,
+        )
+        y_pred = self.st_DT.ret_predicted_Y_int()
+        return y_pred
