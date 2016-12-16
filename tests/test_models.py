@@ -22,11 +22,7 @@ class HouseholdTestCase(TestCase):
 
 class HouseholdGroupTestCase(TestCase):
     def test_basic_function(self):
-        house_group = HouseholdGroup()
-        # Input Phase
-        for home_id in range(10011, 10021):
-            house = Household(home_id)
-            house_group.append(house)
+        house_group = HouseholdGroup(list(range(10011, 10021)))
         self.assertEqual(len(house_group._households_list), 10)
         # Output Phase
         for house in house_group.get_iter():
@@ -112,10 +108,7 @@ class RecommendModulesUseFlagsTestCase(TestCase):
 
 class FormGeneratorTestCase(TestCase):
     def setUp(self):
-        self.house_group = HouseholdGroup()
-        for home_id in range(10031, 10041):
-            house = Household(home_id)
-            self.house_group.append(house)
+        self.house_group = HouseholdGroup(list(range(10031, 10041)))
 
     def test_basic_function(self):
         for house in self.house_group.get_iter():
