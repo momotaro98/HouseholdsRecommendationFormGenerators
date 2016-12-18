@@ -2,6 +2,10 @@
 import random
 from datetime import datetime as dt
 
+# Data Analysis
+import numpy as np
+from sklearn.cluster import KMeans
+
 # レコメンドレポートに載せる内容モジュールをインポート
 from home_electric_usage_recommendation_modules \
     import (SettingTemp, ReduceUsage, ChangeUsage)
@@ -64,8 +68,11 @@ class HouseholdGroup:
     '''
     Household型のシーケンス
     '''
-    def __init__(self):
+    def __init__(self, homes_id_list):
         self._households_list = []
+        for home_id in homes_id_list:
+            house = Household(home_id)
+            self.append(house)
 
     def append(self, house):
         if not isinstance(house, Household):
@@ -315,6 +322,7 @@ class DecisionTreeSwitcherForHomeCluster:
                 start_time=self.ret_start_train_dt(),
                 end_time=self.ret_end_train_dt(),
             )
+            # add new home's ac_logs to the group's ac_logs list
             ret_ac_logs_list += list(the_house_ac_log.get_rows_iter())
         return ret_ac_logs_list
 
@@ -416,7 +424,15 @@ class ExperimentHomesYact:
         ret_ac_logs_list = list(the_house_ac_log.get_rows_iter())
         return ret_ac_logs_list
 
-    def ret_TU_act_Y_list(self, target_date=None):
+    def ret_act_Y_list(self, target_date=None):
+        '''
+        Abstract Method
+        '''
+        pass
+
+
+class ExperimentHomesYactTotalUsage(ExperimentHomesYact):
+    def ret_act_Y_list(self, target_date=None):
         '''
         list to return
         [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]
@@ -437,7 +453,9 @@ class ExperimentHomesYact:
         y_act_list = self.rDT.train_Y_list
         return y_act_list
 
-    def ret_CU_act_Y_list(self, target_date=None):
+
+class ExperimentHomesYactChangeUsage(ExperimentHomesYact):
+    def ret_act_Y_list(self, target_date=None):
         '''
         list to return
         [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]
@@ -457,3 +475,108 @@ class ExperimentHomesYact:
         )
         y_act_list = self.rDT.train_Y_list
         return y_act_list
+
+
+class HomesClusteringWithKMeans:
+    def __init__(self, house_group):
+        self.house_group = house_group
+        self.train_list = self.ret_train_list()
+
+    def ret_train_list(self):
+        '''
+        # list to make
+        [
+            # [home_id, family_type, kind_type, area_type],
+            [1, 1, 2, 3],
+            [8, 2, 2, 3],
+            [9, 3, 1, 3],
+            [10, 3, 1, 3],
+            [11, 2, 2, 3],
+
+            [2004, 1, 2, 3],
+            [2005, 2, 3, 2],
+
+            [2152, 1, 2, 3],
+        ]
+        '''
+        train_list = []
+        for house in self.house_group.get_iter():
+            meta_row = house.get_home_meta()
+
+            family_num = meta_row.family_num if meta_row.family_num else 2
+            area_type = meta_row.area_type if meta_row.kind_type else 3
+            kind_type = meta_row.kind_type if meta_row.kind_type else 2
+            train_list.append(
+                [
+                    house.id,
+                    family_num,
+                    area_type,
+                    kind_type,
+                ]
+            )
+        return train_list
+
+    def ret_pred_dict(self, n_clusters):
+        '''
+        # dict to make
+        {
+            # {home_id: cluster_num}
+            1: 0,
+            8: 3,
+            9: 1,
+            10: 2,
+            11: 2,
+
+            2004: 0,
+            2012: 2,
+
+            2152: 2,
+        }
+        0, 1, 2, 3 はクラスタ番号(4クラスタに分けた場合)
+        '''
+        train_array = np.array(self.train_list)
+        train_array = train_array[:, 1:]  # home_idカラム削除
+        # train_array = train_array[:, 1:2]  # 家族人数のみ
+        # train_array = train_array[:, 1:3]
+        pred_array = KMeans(n_clusters=n_clusters).fit_predict(train_array)
+
+        pred_list = list(pred_array)
+        if len(pred_list) != len(list(self.house_group.get_iter())):
+            raise Exception(
+                "pred_list and house_group is not same list length.",
+                'pred_list', len(pred_list),
+                'house_group', len(list(self.house_group.get_iter())),
+            )
+        pred_dict = {house.id: pred for house, pred in zip(
+            self.house_group.get_iter(), pred_list
+        )}
+        return pred_dict
+
+    def ret_target_home_cluster_homes_id_list(self, pred_dict, target_home_id):
+        '''
+        # list to make
+        [2011, 2020, 2024, .... 2012]
+        # 対象のikexp家庭の同じクラスタの家庭
+        '''
+        # get target_home's cluster_num
+        # pred_dict = self.ret_pred_dict(n_clusters=4)
+        target_home_cluter_num = pred_dict[target_home_id]
+
+        ret_list = []
+        for home_id, cluster_num in pred_dict.items():
+            if home_id in (1, 8, 9, 10, 11):
+                continue  # ikexp家庭は省く
+            if cluster_num == target_home_cluter_num:
+                ret_list.append(home_id)
+        return ret_list
+
+    def run(self, target_home_id, n_clusters):
+        '''
+        # list to return
+        [2011, 2020, 2024, .... 2012]
+        # 対象のikexp家庭の同じクラスタの家庭
+        '''
+        pred_dict = self.ret_pred_dict(n_clusters)
+        ret_homes_id_list = self.ret_target_home_cluster_homes_id_list(
+            pred_dict, target_home_id)
+        return ret_homes_id_list
