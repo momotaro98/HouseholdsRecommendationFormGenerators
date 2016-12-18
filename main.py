@@ -56,15 +56,11 @@ class PredictionEvaluation:
 
 class MyPredictionEvaluation:
     """
-    >>> pe = PredictionEvaluation([0, 1, 0, 0], [0, 1, 1, 0])
+    修論研究における評価量である精度(Precision)を求める
+
+    >>> pe = MyPredictionEvaluation([0, 1, 0, 0], [0, 1, 1, 0])
     >>> precision = pe.ret_Precision()
-    >>> recall = pe.ret_Recall()
-    >>> fvalue = pe.ret_Fvalue()
-    >>> precsioin, recall, fvalue = pe.ret_Precisioin_Recall_Fvalue()
     """
-    '''
-    精度(Precision)、再現率(Recall)、F値(F-measure)を求めるためのクラス
-    '''
     def __init__(self, y_true, y_pred):
         if len(y_true) != len(y_pred):
             raise Exception("True, Predの2つのリストの長さがちゃうで")
@@ -89,71 +85,80 @@ class MyPredictionEvaluation:
             ret = 0.0
         return ret
 
-    def ret_NonPrecision(self):
-        try:
-            ret = self.TN / (self.TN + self.FN)
-        except ZeroDivisionError:
-            ret = 0.0
-        return ret
 
-    def ret_MyValue(self):
-        precision = self.ret_Precision()
-        print('precision', precision)
-        non_precision = self.ret_NonPrecision()
-        print('non_precision', non_precision)
-        # myValue = (2 * non_precision * precision) / (non_precision + precision)
-        myValue = (precision + non_precision) / 2
-        return myValue
-
-    def ret_Precisioin_Recall_Fvalue(self):
-        return self.ret_Precision(), self.ret_Recall(), self.ret_Fvalue()
+def _ret_act_list(eyh_instance):
+    act_y_list = [ay[1] for ay in eyh_instance.ret_act_Y_list()]
+    return act_y_list
 
 
-def run_quality_of_recommendations_eval(house_group, target_home_id):
-    # 家庭クラスタの決定木モデルから得られる2016年冬時期のY予測値
-    start_dt = datetime(2016, 12, 1, 0, 0, 0)
-    end_dt = datetime(2016, 12, 14, 23, 59, 59)
+def _ret_pred_list(isreco_instance, start_dt, end_dt):
     pred_y_list = []
     s_dt = start_dt
     while s_dt <= end_dt:
-        # TotalUsage
-        tu_pred_Y = IsTotalUsage(house_group).ret_pred_Y(s_dt.date())
-        # ChangeUsage
-        cu_pred_Y = IsChangeUsage(house_group).ret_pred_Y(s_dt.date())
-
-        # Need Switch!!
-        pred_y_list.append(tu_pred_Y)
-        # pred_y_list.append(cu_pred_Y)
+        pred_Y = isreco_instance.ret_pred_Y(s_dt.date())
+        pred_y_list.append(pred_Y)
 
         s_dt += timedelta(days=1)
-
-    # 実験家庭から得られる2016年冬時期のY実際値
-    ehy = ExperimentHomesYact(
-        home_id=target_home_id,  # ikexp実験宅
-        start_train_dt=start_dt,
-        end_train_dt=end_dt,
-    )
-    # Need switch!!!
-    # TotalUsage and ChangeUsage
-    act_y_list = [ay[1] for ay in ehy.ret_TU_act_Y_list()]
-    # act_y_list = [ay[1] for ay in ehy.ret_CU_act_Y_list()]
-
-    print('act_y_list: ', act_y_list)
-    print('pre_y_list: ', pred_y_list)
-    # pe = PredictionEvaluation(act_y_list, pred_y_list)
-    pe = MyPredictionEvaluation(act_y_list, pred_y_list)
-    value = pe.ret_MyValue()
-    print('value', value)
+    return pred_y_list
 
 
-def run_learning_computing_time_eval(house_group):
+def ret_act_and_pred_y_list(house_group, target_home_id):
+    # 家庭クラスタの決定木モデルから得られる2016年冬時期のY予測値
+    start_dt = datetime(2016, 12, 1, 0, 0, 0)
+    end_dt = datetime(2016, 12, 14, 23, 59, 59)
+    '''
+    contents_dict = {
+        'tu': {'act': None, 'pred': None},
+        'cu': {'act': None, 'pred': None},
+    }
+    '''
+    content_list = ['tu', 'cu']
+    # content_list = ['tu']
+    # content_list = ['cu']
+    contents_dict = {}
+    for content in content_list:
+        contents_dict[content] = {}
+        for act_or_pred in ('act', 'pred'):
+            if content == 'tu' and act_or_pred == 'act':
+                contents_dict[content][act_or_pred] = ExperimentHomesYactTotalUsage(
+                    home_id=target_home_id,  # ikexp実験宅
+                    start_train_dt=start_dt,
+                    end_train_dt=end_dt,
+                )
+            elif content == 'cu' and act_or_pred == 'act':
+                contents_dict[content][act_or_pred] = ExperimentHomesYactChangeUsage(
+                    home_id=target_home_id,  # ikexp実験宅
+                    start_train_dt=start_dt,
+                    end_train_dt=end_dt,
+                )
+            elif content == 'tu' and act_or_pred == 'pred':
+                contents_dict[content][act_or_pred] = IsTotalUsage(house_group)
+            elif content == 'cu' and act_or_pred == 'pred':
+                contents_dict[content][act_or_pred] = IsChangeUsage(house_group)
+
+    act_y_list = []
+    pred_y_list = []
+    for content, ac_dict in contents_dict.items():
+        act_y_list += _ret_act_list(ac_dict['act'])
+        pred_y_list += _ret_pred_list(ac_dict['pred'], start_dt, end_dt)
+
+    return act_y_list, pred_y_list
+
+
+def ret_learning_time(house_group, n_clusters):
     start = time.time()
     cu_pred_Y = IsChangeUsage(house_group).ret_pred_Y()
     tu_pred_Y = IsTotalUsage(house_group).ret_pred_Y()
-    # print('pred_Y', pred_Y)
     end = time.time()
     elapsed_time = end - start
-    print('elapsed_time', elapsed_time)
+    learning_time = elapsed_time * n_clusters
+    return learning_time
+
+
+def run_csv_output(n_clusters, learning_time, precision):
+    with open('eval_cluter.csv', 'a') as f:
+        writer = csv.writer(f)
+        writer.writerow([n_clusters, learning_time, precision])
 
 
 def run_eval():
@@ -166,14 +171,8 @@ def run_eval():
     # Instanciate HomesClusteringWithKMeans
     hcwk = HomesClusteringWithKMeans(all_house_group)
 
-    # set target_home_id
-    # target_home_id = 9
-    target_home_id = 11
-    print('target_home_id', target_home_id)
-
     # set n_clusters_list
     n_clusters_list = [
-        # 50,
         10,
         9,
         8,
@@ -191,20 +190,58 @@ def run_eval():
         # print current n_clusters for evaluations
         print('n_clusters: ', n_clusters)
 
-        # make target home's cluter's home_id list
-        target_home_cluster_homes_id_list = hcwk.run(target_home_id=target_home_id, n_clusters=n_clusters)
-        print('homes num: ', len(target_home_cluster_homes_id_list))
-
-        clustered_house_group = HouseholdGroup(target_home_cluster_homes_id_list)
-
         # Evaluation 01. Eval Learning Computing Time
         # 学習計算コスト評価
-        # run_learning_computing_time_eval(clustered_house_group)
+        learning_time = 0
 
         # Evaluation 02. Eval Quality of Recommendations
         # レコメンド品質を検証する評価
-        run_quality_of_recommendations_eval(clustered_house_group, target_home_id)
+        # set empty act_y_list and pred_y_list
+        act_y_list = []
+        pred_y_list = []
 
+        # set target_home_id
+        # target_home_id_list = [1, 8, 9, 11]
+        target_home_id_list = [1, 9, 11]  # 採用！！！
+        # target_home_id_list = [8, 9, 11]
+        # target_home_id_list = [9, 11]
+        print('target_homes_id', target_home_id_list)
+        for target_home_id in target_home_id_list:  # ikexp
+            # make target home's cluter's home_id list
+            target_home_cluster_homes_id_list = hcwk.run(
+                target_home_id=target_home_id,
+                n_clusters=n_clusters
+            )
+            # print('homes num: ', len(target_home_cluster_homes_id_list))
+
+            clustered_house_group = HouseholdGroup(target_home_cluster_homes_id_list)
+
+            # Evaluation 01. Eval Learning Computing Time
+            # 学習計算コスト評価
+            learning_time += ret_learning_time(clustered_house_group, n_clusters)
+
+            # Evaluation 02. Eval Quality of Recommendations
+            # レコメンド品質を検証する評価
+            new_act_y_list, new_pred_y_list = ret_act_and_pred_y_list(
+                clustered_house_group,
+                target_home_id,
+            )
+            act_y_list += new_act_y_list
+            pred_y_list += new_pred_y_list
+
+        # Evaluation 01. Eval Learning Computing Time
+        # 学習計算コスト評価
+        learning_time = learning_time / len(target_home_id_list)
+        print('learning_time: ', learning_time, ' [sec]')
+
+        # Evaluation 02. Eval Quality of Recommendations
+        # レコメンド品質を検証する評価
+        # print('act_y_list: ', act_y_list)
+        # print('pre_y_list: ', pred_y_list)
+        precision = MyPredictionEvaluation(act_y_list, pred_y_list).ret_Precision()
+        print('Precision', precision)
+
+        run_csv_output(n_clusters, learning_time, precision)
 
 
 def ret_homes_id_list(hems='all'):
@@ -328,7 +365,7 @@ if __name__ == "__main__":
 
 
     ###+++ Switching Case Start +++###
-    # switch flags phase
+    # Switch flags phase
     # この処理はサーバ側で実行される
     for house in house_group.get_iter():
         sw_fs = UseFlagSwitcher(house)

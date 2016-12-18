@@ -424,7 +424,15 @@ class ExperimentHomesYact:
         ret_ac_logs_list = list(the_house_ac_log.get_rows_iter())
         return ret_ac_logs_list
 
-    def ret_TU_act_Y_list(self, target_date=None):
+    def ret_act_Y_list(self, target_date=None):
+        '''
+        Abstract Method
+        '''
+        pass
+
+
+class ExperimentHomesYactTotalUsage(ExperimentHomesYact):
+    def ret_act_Y_list(self, target_date=None):
         '''
         list to return
         [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]
@@ -445,7 +453,9 @@ class ExperimentHomesYact:
         y_act_list = self.rDT.train_Y_list
         return y_act_list
 
-    def ret_CU_act_Y_list(self, target_date=None):
+
+class ExperimentHomesYactChangeUsage(ExperimentHomesYact):
+    def ret_act_Y_list(self, target_date=None):
         '''
         list to return
         [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]
@@ -494,14 +504,14 @@ class HomesClusteringWithKMeans:
             meta_row = house.get_home_meta()
 
             family_num = meta_row.family_num if meta_row.family_num else 2
-            kind_type = meta_row.kind_type if meta_row.kind_type else 2
             area_type = meta_row.area_type if meta_row.kind_type else 3
+            kind_type = meta_row.kind_type if meta_row.kind_type else 2
             train_list.append(
                 [
                     house.id,
                     family_num,
-                    kind_type,
                     area_type,
+                    kind_type,
                 ]
             )
         return train_list
@@ -526,6 +536,8 @@ class HomesClusteringWithKMeans:
         '''
         train_array = np.array(self.train_list)
         train_array = train_array[:, 1:]  # home_idカラム削除
+        # train_array = train_array[:, 1:2]  # 家族人数のみ
+        # train_array = train_array[:, 1:3]
         pred_array = KMeans(n_clusters=n_clusters).fit_predict(train_array)
 
         pred_list = list(pred_array)
