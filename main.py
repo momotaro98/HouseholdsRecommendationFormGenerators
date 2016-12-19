@@ -155,6 +155,13 @@ def ret_learning_time(house_group, n_clusters):
     return learning_time
 
 
+def run_standard_output(n_clusters, learning_time, precision):
+    n_clusters_str = str(n_clusters).rjust(5)
+    learning_time_str = str(learning_time).rjust(20)
+    precision_str = str(precision).rjust(20)
+    print("{0}|{1}|{2}".format(n_clusters_str, learning_time_str, precision_str))
+
+
 def run_csv_output(n_clusters, learning_time, precision):
     with open('eval_cluter.csv', 'a') as f:
         writer = csv.writer(f)
@@ -184,11 +191,12 @@ def run_eval():
         2,
         1,
     ]
+    print('n_clusters | Learning_Time[sec] | Precision[rate]')
     for n_clusters in n_clusters_list:
-        print('=' * 79)
+        print('-' * 79)
 
         # print current n_clusters for evaluations
-        print('n_clusters: ', n_clusters)
+        # print('n_clusters: ', n_clusters)
 
         # Evaluation 01. Eval Learning Computing Time
         # 学習計算コスト評価
@@ -205,7 +213,7 @@ def run_eval():
         target_home_id_list = [1, 9, 11]  # 採用！！！
         # target_home_id_list = [8, 9, 11]
         # target_home_id_list = [9, 11]
-        print('target_homes_id', target_home_id_list)
+        # print('target_homes_id', target_home_id_list)
         for target_home_id in target_home_id_list:  # ikexp
             # make target home's cluter's home_id list
             target_home_cluster_homes_id_list = hcwk.run(
@@ -232,15 +240,19 @@ def run_eval():
         # Evaluation 01. Eval Learning Computing Time
         # 学習計算コスト評価
         learning_time = learning_time / len(target_home_id_list)
-        print('learning_time: ', learning_time, ' [sec]')
+        # print('learning_time: ', learning_time, ' [sec]')
 
         # Evaluation 02. Eval Quality of Recommendations
         # レコメンド品質を検証する評価
         # print('act_y_list: ', act_y_list)
         # print('pre_y_list: ', pred_y_list)
         precision = MyPredictionEvaluation(act_y_list, pred_y_list).ret_Precision()
-        print('Precision', precision)
+        # print('Precision', precision)
 
+        # 標準出力
+        run_standard_output(n_clusters, learning_time, precision)
+
+        # CSV出力
         run_csv_output(n_clusters, learning_time, precision)
 
 
