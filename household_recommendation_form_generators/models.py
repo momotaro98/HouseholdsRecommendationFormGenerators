@@ -580,3 +580,46 @@ class HomesClusteringWithKMeans:
         ret_homes_id_list = self.ret_target_home_cluster_homes_id_list(
             pred_dict, target_home_id)
         return ret_homes_id_list
+
+
+class EvalTotalUsage:
+    def __init__(self, house, start_dt, end_dt):
+        self.house = house
+        self.start_dt = start_dt
+        self.end_dt = end_dt
+
+    def ret_target_season(self):
+        # target_season = 'spr'
+        # target_season = 'sum'
+        # target_season = 'fal'
+        target_season = 'win'
+        return target_season
+
+    def ret_ac_logs_list(self):
+        the_house_ac_log = self.house.get_ac_log(
+            start_time=self.start_dt,
+            end_time=self.end_dt,
+        )
+        ret_ac_logs_list = list(the_house_ac_log.get_rows_iter())
+        return ret_ac_logs_list
+
+    def ret_target_hour(self):
+        target_hour = 10
+        return target_hour
+
+    def ret_total_usage_hour_per_day(self):
+        start_train_dt = self.start_dt
+        end_train_dt = self.end_dt
+        ac_logs_list = self.ret_ac_logs_list()
+        target_season = self.ret_target_season()
+        target_hour = self.ret_target_hour()
+        self.tuDT = TotalUsageDT(
+            start_train_dt=start_train_dt,
+            end_train_dt=end_train_dt,
+            ac_logs_list=ac_logs_list,
+            target_season=target_season,
+            target_hour=target_hour,
+        )
+        target_usage_hour = self.tuDT._ret_target_usage_hour()
+        total_usage_hour_per_day = target_usage_hour + 2.0
+        return total_usage_hour_per_day
