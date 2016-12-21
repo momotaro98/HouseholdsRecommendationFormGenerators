@@ -146,9 +146,10 @@ def ret_act_and_pred_y_list(house_group, target_home_id):
 
 
 def ret_learning_time(house_group, n_clusters):
+    any_date = datetime(2015, 12, 24).date()
     start = time.time()
-    cu_pred_Y = IsChangeUsage(house_group).ret_pred_Y()
-    tu_pred_Y = IsTotalUsage(house_group).ret_pred_Y()
+    cu_pred_Y = IsChangeUsage(house_group).ret_pred_Y(any_date)
+    tu_pred_Y = IsTotalUsage(house_group).ret_pred_Y(any_date)
     end = time.time()
     elapsed_time = end - start
     learning_time = elapsed_time * n_clusters
@@ -245,7 +246,7 @@ def run_eval():
         # Evaluation 02. Eval Quality of Recommendations
         # レコメンド品質を検証する評価
         # print('act_y_list: ', act_y_list)
-        # print('pre_y_list: ', pred_y_list)
+        print('pre_y_list: ', pred_y_list)
         precision = MyPredictionEvaluation(act_y_list, pred_y_list).ret_Precision()
         # print('Precision', precision)
 
@@ -407,4 +408,24 @@ if __name__ == "__main__":
 
     # 各場合の計算時間を表示
     print(elapsed_time_dict)
+    """
+
+
+    """
+    # non report
+    # start_dt = datetime(2016, 11, 28)
+    # end_dt = datetime(2016, 12, 4)
+
+    # all contents
+    # start_dt = datetime(2016, 12, 5)
+    # end_dt = datetime(2016, 12, 11)
+
+    # proposed method
+    start_dt = datetime(2016, 12, 12)
+    end_dt = datetime(2016, 12, 19)
+
+    house = Household(home_id=8)
+    etu = EvalTotalUsage(house, start_dt, end_dt)
+    total_usage_hour_per_day = etu.ret_total_usage_hour_per_day()
+    print('total_usage_hour_per_day', total_usage_hour_per_day)
     """
